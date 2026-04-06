@@ -1,0 +1,20 @@
+{
+  "name": "portal-cloudbridge",
+  "version": "1.0.0",
+  "description": "Application using MERN to lower the barrier to entry for private cloud adoption by providing price transparency and a simplified \"Quote-to-Provision\" workflow.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dakshinkali-Team/Portal-CloudBridge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dakshinkali-Team/Portal-CloudBridge/issues"
+  },
+  "homepage": "https://github.com/Dakshinkali-Team/Portal-CloudBridge#readme"
+}
