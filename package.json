@@ -16,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/Dakshinkali-Team/Portal-CloudBridge/issues"
   },
-  "homepage": "https://github.com/Dakshinkali-Team/Portal-CloudBridge#readme"
+  "homepage": "https://github.com/Dakshinkali-Team/Portal-CloudBridge#readme",
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "postgres": "^3.4.9"
+  }
 }
