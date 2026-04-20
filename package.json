@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/Dakshinkali-Team/Portal-CloudBridge/issues"
   },
-  "homepage": "https://github.com/Dakshinkali-Team/Portal-CloudBridge#readme"
+  "homepage": "https://github.com/Dakshinkali-Team/Portal-CloudBridge#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.2"
+  }
 }
