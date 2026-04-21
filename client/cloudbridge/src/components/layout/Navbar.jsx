@@ -1,5 +1,5 @@
 import React from 'react'
-import logo from '../assets/Cloud_Bridge.svg'
+import logo from '../../assets/Cloud_Bridge.svg'
 const Navbar = () => {
   return (
      <header className="sticky top-0 z-50 bg-white">
