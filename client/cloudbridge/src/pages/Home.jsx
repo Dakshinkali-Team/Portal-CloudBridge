@@ -1,5 +1,6 @@
-import Input from '../components/common/Input';
 
+import Input from '../components/common/Input';
+import Navbar from '../components/layout/Navbar.jsx'
 const Home = () => {
   return (
     <div className="flex justify-center p-10">
