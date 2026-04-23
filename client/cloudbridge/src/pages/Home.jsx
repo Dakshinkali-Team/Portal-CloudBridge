@@ -1,16 +1,15 @@
 
 import Input from '../components/common/Input';
 import Navbar from '../components/layout/Navbar.jsx'
+import Footer from '../components/layout/Footer.jsx'
 const Home = () => {
   return (
-    <div className="flex justify-center p-10">
-      {/* Importing from the correct path */}
-      <Input 
-        label="Email Address" 
-        placeholder="Enter your email" 
-      />
+    <div>
+      <Navbar/>
+      <Footer/>
     </div>
   );
 };
+
 
 export default Home;
