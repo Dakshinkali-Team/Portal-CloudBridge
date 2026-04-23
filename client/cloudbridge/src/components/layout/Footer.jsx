@@ -12,7 +12,7 @@ const Footer = () => {
     {/* grid items */}
           {footerData.map((section, index) => (
             <div key={index}>
-              <h3 className="text-xs font-semibold text-gray-500 mb-4">
+              <h3 className="text-xs font-semibold text-gray-500 mb-4 text-left">
                 {section.title}
               </h3>
 
