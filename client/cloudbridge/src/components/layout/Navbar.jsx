@@ -5,7 +5,7 @@ const Navbar = () => {
      <header className="sticky top-0 z-50 bg-white">
       <nav className="mx-auto max-w-360 px-6 lg:px-12 h-20 flex items-center justify-between">
 
-        {/* LEFT SECTION */}
+        {/* This is left section of the navbar including the menu bar */}
         <div className="flex items-center gap-8">
 
           {/* LOGO */}
@@ -20,7 +20,7 @@ const Navbar = () => {
             </span>
           </a>
 
-          {/* NAV LINKS */}
+          {/* These are the navigation links on left */}
           <ul className="hidden md:flex items-center gap-8 text-base font-medium text-[#414651]">
             <li>
               <a href="#" className="hover:text-black transition">
@@ -45,7 +45,7 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* RIGHT SECTION */}
+        {/* The Right section */}
         <div className="hidden md:flex items-center gap-5">
           <a
             href="#"
@@ -62,8 +62,8 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* MOBILE MENU BUTTON */}
-        <div className="md:hidden">
+        {/* This is the mobile button menu on right */}
+        {/* <div className="md:hidden">
           <button>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +80,7 @@ const Navbar = () => {
               />
             </svg>
           </button>
-        </div>
+        </div> */}
 
       </nav>
     </header>
