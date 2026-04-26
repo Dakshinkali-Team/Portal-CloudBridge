@@ -14,10 +14,10 @@ const Signup = () => {
       <GridBackground />
 
       {/* Container */}
-      <div className="max-w-[1280px] mx-auto px-6 flex items-center justify-center min-h-screen">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">
         
         {/* Card */}
-        <div className="w-[360px] p-8 ">
+        <div className="w-90 p-8 ">
 
           {/* Logo */}
           <div className="flex justify-center mb-4">
@@ -30,7 +30,7 @@ const Signup = () => {
                   "0 10px 15px -3px rgba(11,120,193,0.2), 0 4px 6px -4px rgba(11,120,193,0.2)",
               }}
             >
-              <img src={Logo} alt="logo" className="w-[16px] h-[12px]" />
+              <img src={Logo} alt="logo" className="w-4 h-3" />
             </div>
           </div>
 
@@ -70,7 +70,7 @@ const Signup = () => {
           {/* 🔥 Reserved space to prevent layout shift */}
           <div
             className={`transition-all duration-300 overflow-hidden ${
-              type === "company" ? "h-[72px] opacity-100 mb-4" : "h-0 opacity-0"
+              type === "company" ? "h-18 opacity-100 mb-4" : "h-0 opacity-0"
             }`}
           >
             <Input label="Company Name" placeholder="Amalgamated Inc." />
