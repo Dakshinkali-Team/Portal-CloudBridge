@@ -132,6 +132,19 @@ const Navbar = () => {
 
           <Button as="a" href="#" variant="secondary">Log in</Button>
           <Button as="a" href="#">Get Started</Button>
+          <a
+            href="/login"
+            className="text-base font-medium text-[#414651] hover:text-black transition"
+          >
+            Log in
+          </a>
+
+          <a
+            href="/signup"
+            className="rounded-lg bg-[#0B78C1] px-5 py-2.5 text-white text-sm font-medium hover:bg-[#095a91] transition"
+          >
+            Get Started
+          </a>
         </div>
 
         {/* MOBILE MENU BUTTON */}
