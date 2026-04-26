@@ -48,14 +48,14 @@ const Navbar = () => {
         {/* The Right section */}
         <div className="hidden md:flex items-center gap-5">
           <a
-            href="#"
+            href="/login"
             className="text-base font-medium text-[#414651] hover:text-black transition"
           >
             Log in
           </a>
 
           <a
-            href="#"
+            href="/signup"
             className="rounded-lg bg-[#0B78C1] px-5 py-2.5 text-white text-sm font-medium hover:bg-[#095a91] transition"
           >
             Get Started
