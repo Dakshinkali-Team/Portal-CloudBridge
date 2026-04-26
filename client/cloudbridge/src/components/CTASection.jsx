@@ -10,18 +10,18 @@ const features = [
 const CTASection = () => {
   return (
     <section className="py-20 bg-[#FAFAFA]">
-      <div className="max-w-[1100px] mx-auto flex items-center justify-between gap-10">
+      <div className="max-w-275 mx-auto flex items-center justify-between gap-10">
         {/* LEFT CONTENT */}
-        <div className="w-full max-w-[720px]">
-          <div className="w-full max-w-[640px] px-[32px] flex flex-col gap-12">
+        <div className="w-full max-w-180">
+          <div className="w-full max-w-160 px-8 flex flex-col gap-12">
             {/* HEADING */}
-            <h2 className="w-[544px] font-semibold text-[32px] leading-tight tracking-[-0.02em] text-gray-900">
+            <h2 className="w-136 font-semibold text-[32px] leading-tight tracking-[-0.02em] text-gray-900">
               Transparent Pricing,{" "}
               <span className="text-blue-600 font-semibold">No Surprises.</span>
             </h2>
 
             {/* CHECKLIST */}
-            <ul className="w-[544px] flex flex-col gap-5 pl-[24px]">
+            <ul className="w-136 flex flex-col gap-5 pl-6">
               {features.map((item, index) => (
                 <li key={index} className="flex items-center gap-3">
                   {/* ICON */}
@@ -48,7 +48,7 @@ const CTASection = () => {
         </div>
 
         {/* RIGHT IMAGE */}
-        <div className=" w-[720px] ">
+        <div className=" w-180 ">
           <img
             src={Preview}
             alt="pricing preview"

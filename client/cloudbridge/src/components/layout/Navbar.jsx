@@ -129,9 +129,6 @@ const Navbar = () => {
 
         {/* RIGHT SECTION */}
         <div className="hidden md:flex items-center gap-5">
-
-          <Button as="a" href="#" variant="secondary">Log in</Button>
-          <Button as="a" href="#">Get Started</Button>
           <a
             href="/login"
             className="text-base font-medium text-[#414651] hover:text-black transition"
@@ -146,31 +143,10 @@ const Navbar = () => {
             Get Started
           </a>
         </div>
-
-        {/* MOBILE MENU BUTTON */}
-        {/* <div className="md:hidden">
-          <button>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.8"
-              stroke="currentColor"
-              className="h-7 w-7 text-slate-900"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            </svg>
-          </button>
-        </div> */}
-
       </nav>
     </header>
   )
 }
 
 
-export default Navbar
+export default Navbar;
