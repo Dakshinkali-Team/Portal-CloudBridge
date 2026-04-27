@@ -3,6 +3,7 @@ import lightning from '../../assets/lightning-01.svg'
 import Button from './components/Button.jsx'
 
 import HeroImage from '../../assets/HeroImage.png'
+import { Link } from 'react-router-dom'
 const Hero = () => {
     return (
     <section className="w-full bg-white">
@@ -41,7 +42,9 @@ const Hero = () => {
               
               <Button> Start Provisioning →</Button>
 
-              <Button variant="secondary">Get Started</Button>
+              <Link to="/signup">
+                <Button variant="secondary">Get Started</Button>
+              </Link>  
             </div>
           </div>
 
