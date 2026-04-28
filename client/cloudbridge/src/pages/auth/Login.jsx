@@ -17,7 +17,7 @@ const Login = () => {
           {/* Logo */}
           <div className="flex justify-center items-center mb-4">
             <div
-              className="flex items-center justify-center w-[40px] h-[40px] rounded-lg"
+              className="flex items-center justify-center w-10 h-10 rounded-lg"
               style={{
                 padding: "0 10px",
                 background:

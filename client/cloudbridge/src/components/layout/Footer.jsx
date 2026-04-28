@@ -1,9 +1,9 @@
 import React from "react";
 import footerData from "./footerData";
-
+import Logo from "../../assets/footericon.png" 
 const Footer = () => {
   return (
-    <footer className="bg-gray-50">
+    <footer className="bg-white">
       <div className="flex max-w-7xl mx-auto px-8 py-8 flex-col items-start gap-12 self-stretch">
 
         <div className="flex max-w-7xl px-8 flex-col items-start gap-12 self-stretch">
@@ -39,9 +39,13 @@ const Footer = () => {
           ))}
         </div>
 </div>
+<div className="w-[95%] mx-auto border-t border-gray-300 mt-3 -mb-6"></div>
+
         {/* Bottom */}
-        <div className="flex pt-8 px-8 justify-start items-center content-center gap-y-6 self-stretch flex-wrap">
-          <div className="w-5 h-5 bg-purple-500 rounded-full"></div>
+        <div className="flex pt-8 px-8 -mt-6 justify-start items-center content-center gap-y-6 self-stretch flex-wrap gap-1.5 ">
+          <div className="w-5 h-5 flex items-center justify-center">
+  <img src={Logo} alt="Logo" className="max-w-full max-h-full object-contain" />
+</div>
           <span className="text-sm font-medium text-gray-700">
             CloudBridge
           </span>
