@@ -43,6 +43,17 @@ const ServiceSection = () => {
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
+        <div className="mb-16">
+          <p className="text-sm font-semibold text-[#0070BA] uppercase tracking-wide">
+            Features
+          </p>
+          <h2 className="text-[32px] leading-[40px] font-bold mt-2">
+            Enterprise-grade control for modern teams
+          </h2>
+          <p className="text-[18px] leading-[28px] text-gray-500 mt-4 max-w-xl">
+            Everything you need to manage your cloud infrastructure at scale, without the complexity.
+          </p>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           
           {/* LEFT: Reusable List */}
