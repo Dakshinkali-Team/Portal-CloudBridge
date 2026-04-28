@@ -9,16 +9,16 @@ const NewsletterCTA = () => {
 
         <div className="bg-[#074874] rounded-2xl shadow-lg px-8 py-10">
           
-          <h2 className="text-white text-2xl md:text-3xl font-semibold mb-2">
+          <h2 className="text-white text-center text-2xl md:text-3xl font-semibold mb-2">
             Still thinking about it?
           </h2>
 
-          <p className="text-blue-100 text-base md:text-lg mb-6">
+          <p className="text-blue-100 text-center text-base md:text-lg mb-6">
             Sign up for our newsletter and get 10% off your next purchase.
           </p>
 
           {/* INPUT + BUTTON */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 max-w-md">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
             <input
               type="email"
               placeholder="Enter your email"
@@ -33,7 +33,7 @@ const NewsletterCTA = () => {
           </div>
 
           {/* PRIVACY TEXT */}
-          <p className="text-xs text-blue-200 mt-4">
+          <p className="text-xs text-blue-200 mt-4 text-center">
             We care about your data in our
             <span className="underline ml-1 cursor-pointer">
               privacy policy
