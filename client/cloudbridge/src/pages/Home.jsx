@@ -14,14 +14,27 @@ import SocialProof from '../components/sections/SocialProof.jsx';
 const Home = () => {
   return (
     <div>
-      <Navbar/>
-      <Hero/>
-      <SocialProof/>
-      <FeatureSection/>
-      <ServiceSection/>
-      <CTASection/>
-      <CTASectionNewsletter/>
-      <Footer/>
+      <Navbar />
+      <Hero />
+      <SocialProof />
+      
+      {/* How it Works -> FeatureSection */}
+      <section id="how-it-works">
+        <FeatureSection />
+      </section>
+
+      {/* Features -> ServiceSection */}
+      <section id="features">
+        <ServiceSection />
+      </section>
+
+      {/* Pricing -> CTASection */}
+      <section id="pricing">
+        <CTASection />
+      </section>
+
+      <CTASectionNewsletter />
+      <Footer />
     </div>
   );
 };

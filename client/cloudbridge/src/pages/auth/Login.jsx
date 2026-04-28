@@ -6,37 +6,37 @@ import { Link } from "react-router-dom";
 
 const Login = () => {
   return (
-    <div className="relative flex min-h-[960px] flex-col items-center justify-start pt-32 bg-white overflow-hidden">
+    <div className="relative flex min-h-240 flex-col items-center justify-start pt-32 bg-white overflow-hidden">
       
-      {/* 🔷 Background Grid */}
-      <GridBackground />
+      {/* Background Grid */}
+      {/* <GridBackground /> */}
 
-      {/* 🔷 Main Container */}
-      <div className="relative flex w-full max-w-[1280px] flex-col items-center px-8">
+      {/* Main Container */}
+      <div className="relative flex w-full max-w-7xl flex-col items-center px-8">
         
-        {/* 🔷 Content */}
-        <div className="flex w-full max-w-[360px] flex-col gap-8">
+        {/* Content */}
+        <div className="flex w-full max-w-90 flex-col gap-8">
           
-          {/* 🔷 Header */}
+          {/* Header */}
           <div className="flex flex-col items-center gap-6 w-full">
             
             {/* Logo Box */}
-            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0B78C1] to-[#074D82] shadow-[0_10px_15px_-3px_rgba(11,120,193,0.2),0_4px_6px_-4px_rgba(11,120,193,0.2)]">
+            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] shadow-[0_10px_15px_-3px_rgba(11,120,193,0.2),0_4px_6px_-4px_rgba(11,120,193,0.2)]">
               <img src={Logo} alt="logo" className="w-5 h-5" />
             </div>
 
             {/* Title + Subtitle */}
             <div className="flex flex-col items-center gap-3 text-center w-full">
-              <h1 className="text-[30px] leading-[38px] font-semibold text-[#181D27]">
+              <h1 className="text-[30px] leading-9.5 font-semibold text-[#181D27]">
                 Log in to your account
               </h1>
-              <p className="text-[16px] leading-[24px] text-[#535862]">
+              <p className="text-[16px] leading-6 text-[#535862]">
                 Welcome back! Please enter your details.
               </p>
             </div>
           </div>
 
-          {/* 🔷 Form */}
+          {/* Form */}
           <form className="flex flex-col gap-5 w-full">
             
             {/* Inputs */}
@@ -72,7 +72,7 @@ const Login = () => {
             />
           </form>
 
-          {/* 🔷 Signup */}
+          {/* Signup */}
           <p className="text-center text-sm text-gray-600">
             Don’t have an account?{" "}
             <Link to="/signup" className="text-blue-600 hover:underline">
