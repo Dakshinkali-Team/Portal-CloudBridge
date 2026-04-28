@@ -1,21 +1,24 @@
-import React from "react";
+
 
 // Importing Logomarks (icons ending in 1)
-import KintsugiIcon from "../../assets/logotext_SocialProof/Kintsugi1.png";
-import MagnoliaIcon from "../../assets/logotext_SocialProof/Magnolia1.png";
-import OdeaoLabsIcon from "../../assets/logotext_SocialProof/OdeaoLabs1.png";
-import SisyphusIcon from "../../assets/logotext_SocialProof/Sisyphus1.png";
-import StackedLabIcon from "../../assets/logotext_SocialProof/StackedLab1.png";
-import WarpspeedIcon from "../../assets/logotext_SocialProof/Warpspeed1.png";
+import React from "react";
 
-// Importing Logotexts (no number)
-import KintsugiText from "../../assets/logotext_SocialProof/Kintsugi.png";
-import MagnoliaText from "../../assets/logotext_SocialProof/Magnolia.png";
-import OdeaoLabsText from "../../assets/logotext_SocialProof/OdeaoLabs.png";
-import SisyphusText from "../../assets/logotext_SocialProof/Sisyphus.png";
-import StackedLabText from "../../assets/logotext_SocialProof/StackedLab.png";
-import WarpspeedText from "../../assets/logotext_SocialProof/Warpspeed.png";
+// Importing Logomarks (icons)
+// Note: Changed folder to 'social_proof' and file names to match your screenshot
+import KintsugiIcon from "../../assets/social_proof/Kintsugi_icon.png";
+import MagnoliaIcon from "../../assets/social_proof/Magnolia_icon.png";
+import OdeaoLabsIcon from "../../assets/social_proof/OdeaoLabs_icon.png";
+import SisyphusIcon from "../../assets/social_proof/Sisyphus_icon.png";
+import StackedLabIcon from "../../assets/social_proof/StackedLab_icon.png";
+import WarpspeedIcon from "../../assets/social_proof/Warpspeed_icon.png";
 
+// Importing Logotexts
+import KintsugiText from "../../assets/social_proof/Kintsugi.png";
+import MagnoliaText from "../../assets/social_proof/Magnolia.png";
+import OdeaoLabsText from "../../assets/social_proof/OdeaoLabs.png";
+import SisyphusText from "../../assets/social_proof/Sisyphus.png";
+import StackedLabText from "../../assets/social_proof/StackedLab.png";
+import WarpspeedText from "../../assets/social_proof/Warpspeed.png";
 export default function SocialProof() {
   const logos = [
     { name: "OdeaoLabs", icon: OdeaoLabsIcon, text: OdeaoLabsText },

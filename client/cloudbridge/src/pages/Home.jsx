@@ -10,11 +10,13 @@ import CTASectionNewsletter from '../components/sections/CTASectionNewsletter.js
 import { Link} from 'react-router-dom';
 import ServiceSection from '../components/cloud/ServiceSection.jsx';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SocialProof from '../components/sections/SocialProof.jsx';
 const Home = () => {
   return (
     <div>
       <Navbar/>
       <Hero/>
+      <SocialProof/>
       <FeatureSection/>
       <ServiceSection/>
       <CTASection/>
