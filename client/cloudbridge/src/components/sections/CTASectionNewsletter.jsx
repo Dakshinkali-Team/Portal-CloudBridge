@@ -10,7 +10,7 @@ const NewsletterCTA = () => {
         </h2>
 
         <p className="text-blue-100 text-base md:text-lg mb-6">
-          Sign up for newsletter and get 10% off your next purchase.
+          Sign up for our newsletter and get 10% off your next purchase.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
