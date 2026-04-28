@@ -11,7 +11,7 @@ const Signup = () => {
   return (
     <div className="relative min-h-screen bg-white">
       {/* Grid Background */}
-      <GridBackground />
+      {/* <GridBackground /> */}
 
       {/* Container */}
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">

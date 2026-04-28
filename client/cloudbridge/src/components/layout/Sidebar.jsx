@@ -15,37 +15,36 @@ const Sidebar = () => {
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
     { name: "Service Request", path: "/service-request", icon: ServiceRequest },
-    { name: "Price Calculator", path: "/price-calculator", icon: CalculatorIcon },
+    {
+      name: "Price Calculator",
+      path: "/price-calculator",
+      icon: CalculatorIcon,
+    },
     { name: "My Services", path: "/services", icon: ServiceIcon },
     { name: "Profile", path: "/profile", icon: ProfileIcon },
   ];
 
   return (
-    <div className="w-[255px] h-screen flex flex-col bg-white border-b border-[#E2E8F0]">
-
+    <div className="w-63.75 h-screen flex flex-col bg-white border-b border-[#E2E8F0] ">
       {/* ================= LOGO CONTAINER ================= */}
-      <div className="flex flex-col w-[255px] h-[93px] px-6 pt-6 pb-[1px] border-b border-[#E2E8F0]">
-        
-        <Link className="flex h-[44px] items-center gap-3 w-full">
-          
+      <div className="flex flex-col w-63.75 h-23.25 px-6 pt-6 pb-px border-b border-[#E2E8F0]">
+        <Link className="flex h-11 items-center gap-3 w-full">
           {/* Icon Box */}
-          <div className="flex w-10 h-10 px-[10px] justify-center items-center">
+          <div className="flex w-10 h-10 px-2.5 justify-center items-center rounded-lg bg-(--colors-foreground-fg-brand-primary-600,#0B78C1) shadow-[0_10px_15px_-3px_rgba(43,127,255,0.2),0_4px_6px_-4px_rgba(43,127,255,0.2)]">
             <img src={LogoIcon} alt="logo" className="w-5 h-5" />
           </div>
 
           {/* Text */}
-          <div className="flex flex-col justify-center items-start h-[44px]">
+          <div className="flex flex-col justify-center items-start h-11">
             <h1 className="text-[18px] font-semibold text-[#0F172B] leading-7">
               CloudBridge
             </h1>
           </div>
-
         </Link>
       </div>
 
       {/* ================= NAVIGATION ================= */}
-      <div className="flex flex-col w-[255px] flex-1 px-4 pt-4 gap-1">
-
+      <div className="flex flex-col w-63.75 flex-1 px-4 pt-4 gap-1">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
 
@@ -54,11 +53,7 @@ const Sidebar = () => {
               key={index}
               to={item.path}
               className={`flex h-12 px-4 items-center gap-3 rounded-lg w-full
-                ${
-                  isActive
-                    ? "bg-[#EFF6FF]"
-                    : "hover:bg-gray-100"
-                }
+                ${isActive ? "bg-[#EFF6FF]" : "hover:bg-gray-100"}
               `}
             >
               {/* Icon */}
@@ -68,11 +63,7 @@ const Sidebar = () => {
               <div className="flex justify-center items-center">
                 <span
                   className={`text-[16px] font-medium leading-6
-                    ${
-                      isActive
-                        ? "text-[#0B78C1]"
-                        : "text-[#45556C]"
-                    }
+                    ${isActive ? "text-[#0B78C1]" : "text-[#45556C]"}
                   `}
                 >
                   {item.name}
@@ -84,10 +75,8 @@ const Sidebar = () => {
       </div>
 
       {/* ================= LOGOUT CONTAINER ================= */}
-      <div className="flex flex-col w-[255px] h-[81px] px-4 pt-[17px] border-t border-[#E2E8F0]">
-
+      <div className="flex flex-col w-63.75 h-20.25 px-4 pt-4.25 border-t border-[#E2E8F0]">
         <button className="flex h-12 px-4 items-center gap-3 rounded-lg w-full hover:bg-gray-100">
-
           {/* Icon */}
           <img src={LogoutIcon} alt="logout" className="w-5 h-5" />
 
@@ -95,9 +84,7 @@ const Sidebar = () => {
           <span className="text-[16px] font-medium text-[#45556C] leading-6">
             Logout
           </span>
-
         </button>
-
       </div>
     </div>
   );
