@@ -1,6 +1,7 @@
 import React from 'react'
 import logo from '../../assets/Cloud_Bridge.svg'
 import Button from './components/Button'
+import { Link } from 'react-router-dom'
 
 const Navbar = () => {
   return (
@@ -45,12 +46,17 @@ const Navbar = () => {
 
         {/* RIGHT SECTION */}
         <div className="hidden md:flex items-center gap-5">
-          <Button as="a" href="#" variant="secondary">Log in</Button>
-          <Button as="a" href="#">Get Started</Button>
+          <Link to="/login">
+            <Button as="a" href="#" variant="secondary">Log in</Button>
+          </Link> 
+
+          <Link to="/signup"> 
+            <Button as="a" href="#">Get Started</Button>
+          </Link>
         </div>
       </nav>
     </header>
-  )
+  ) 
 }
 
 

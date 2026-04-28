@@ -1,24 +1,26 @@
-import React from "react";
 
-import Navbar from '../components/layout/Navbar.jsx';
-import Hero from "../components/layout/Hero.jsx";
+import React from 'react';
+import Input from '../components/common/Input';
+import Navbar from '../components/layout/Navbar.jsx'
+import Footer from '../components/layout/Footer.jsx'
+import CTASection from '../components/CTASection.jsx';
 import FeatureSection from '../components/cloud/FeatureSection.jsx';
-import CTASection from "../components/CTASection.jsx";
-import NewsletterCTA from "../components/sections/CTASectionNewsletter.jsx";
-import Footer from '../components/layout/Footer.jsx';
-import { Link } from "react-router-dom";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import Hero from '../components/layout/Hero.jsx';
+import { Link} from 'react-router-dom';
+import ServiceSection from '../components/cloud/ServiceSection.jsx';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 const Home = () => {
   return (
-      <div>
-        <Navbar />
-        <Hero />
-        <FeatureSection />
-        <CTASection />
-        <NewsletterCTA/>
-        <Footer />
-      </div>
-    );
+    <div>
+      <Navbar/>
+      <Hero/>
+      <FeatureSection/>
+      <ServiceSection/>
+      <CTASection/>
+      <Footer/>
+    </div>
+  );
 };
+
+
 export default Home;
