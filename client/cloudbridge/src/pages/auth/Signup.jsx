@@ -67,7 +67,7 @@ const Signup = () => {
             </button>
           </div>
 
-          {/* 🔥 Reserved space to prevent layout shift */}
+          {/* Reserved space to prevent layout shift */}
           <div
             className={`transition-all duration-300 overflow-hidden ${
               type === "company" ? "h-18 opacity-100 mb-4" : "h-0 opacity-0"
