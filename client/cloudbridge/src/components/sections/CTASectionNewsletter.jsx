@@ -33,7 +33,7 @@ const NewsletterCTA = () => {
           </div>
 
           {/* PRIVACY TEXT */}
-          <p className="text-xs text-blue-200 mt-4 text-center">
+          <p className="text-xs text-blue-200 mt-4 text-center -ml-50">
             We care about your data in our
             <span className="underline ml-1 cursor-pointer">
               privacy policy
