@@ -22,22 +22,22 @@ const Navbar = () => {
           {/* NAV LINKS */}
           <ul className="hidden md:flex items-center gap-8 text-base font-medium text-[#414651]">
             <li>
-              <a href="#" className="hover:text-black transition">
+              <a href="/features" className="hover:text-black transition">
                 Features
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-black transition">
+              <a href="/how-it-works" className="hover:text-black transition">
                 How it works
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-black transition">
+              <a href="/pricing" className="hover:text-black transition">
                 Pricing
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-black transition">
+              <a href="/comparison" className="hover:text-black transition">
                 Comparison
               </a>
             </li>
