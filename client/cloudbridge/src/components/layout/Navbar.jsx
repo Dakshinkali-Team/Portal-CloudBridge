@@ -37,7 +37,7 @@ const Navbar = () => {
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-black transition">
+              <a href="#pricing" className="hover:text-black transition">
                 Comparison
               </a>
             </li>
