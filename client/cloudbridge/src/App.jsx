@@ -7,7 +7,7 @@ import ServiceRequest from "./pages/ServiceRequest";
 import PriceCalculator from "./pages/PriceCalculator";
 import MyServices from "./pages/MyServices";
 import Profile from "./pages/Profile";  
-
+import MyServicesSection from "./pages/MyServicePage/MyServicesSection";
 function App() {
   return (
     <Router>
@@ -20,6 +20,7 @@ function App() {
         <Route path="/price-calculator" element={<PriceCalculator />} />
         <Route path="/services" element={<MyServices />} />
         <Route path="/profile" element={<Profile />} />   
+        <Route path="/my-services" element={<MyServicesSection />} />
       </Routes>
     </Router>
   );
