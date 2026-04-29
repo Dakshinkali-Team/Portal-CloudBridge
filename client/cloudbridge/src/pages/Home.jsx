@@ -11,12 +11,13 @@ import { Link} from 'react-router-dom';
 import ServiceSection from '../components/cloud/ServiceSection.jsx';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SocialProof from '../components/sections/SocialProof.jsx';
+
 const Home = () => {
   return (
     <div>
       <Navbar />
       <Hero />
-      <SocialProof />
+      <SocialProof />                 
       
       {/* How it Works -> FeatureSection */}
       <section id="how-it-works">
