@@ -43,7 +43,7 @@ const Hero = () => {
 
             {/* BUTTONS */}
             <div className="flex items-center gap-4 ">
-              <Link to="/signup">
+              <Link to="/login">
                 <Button> Start Provisioning →</Button>
               </Link>
 
