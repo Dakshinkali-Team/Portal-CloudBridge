@@ -17,7 +17,8 @@ const Signup = () => {
           {/* Header Section */}
           <div className="flex flex-col items-center w-full">
             {/* Logo -> Title (mb-6) */}
-            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] shadow-sm mb-6">
+            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] px-2.5 shadow-[0px_4px_6px_-4px_rgba(11,120,193,0.2),0px_10px_15px_-3px_rgba(11,120,193,0.2)] mb-6">
+      
               <img src={Logo} alt="logo" className="w-5 h-5" />
             </div>
 

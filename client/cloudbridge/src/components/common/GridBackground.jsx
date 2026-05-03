@@ -6,15 +6,10 @@ const GridBackground = () => {
       
       {/* The Grid Layer */}
       <div 
-        className="absolute inset-0 bg-[linear-gradient(to_right,#E9EAEB_1px,transparent_1px),linear-gradient(to_bottom,#E9EAEB_1px,transparent_1px)] bg-size-[48px_48px]"
+        className="absolute inset-0 bg-[linear-gradient(to_right,#E9EAEB_1px,transparent_1px),linear-gradient(to_bottom,#E9EAEB_1px,transparent_1px)] bg-size-[45px_45px]"
         style={{
-          /* at center 0px: Puts the center of the circle at the very top.
-            black 20%: The grid is fully visible at the top.
-            transparent 50%: The grid completely fades out by the time 
-            it reaches the middle of the container (well above form).
-          */
-          maskImage: "radial-gradient(circle at center 0px, black 20%, transparent 50%)",
-          WebkitMaskImage: "radial-gradient(circle at center 0px, black 20%, transparent 50%)",
+          maskImage: "radial-gradient(circle at center 60px, black 30%, transparent 40%)",
+          WebkitMaskImage: "radial-gradient(circle at center 60px, black 30%, transparent 40%)",
         }}
       />
 

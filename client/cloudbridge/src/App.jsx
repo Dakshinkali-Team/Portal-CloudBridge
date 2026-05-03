@@ -8,16 +8,19 @@ import PriceCalculator from "./pages/PriceCalculator";
 import MyServices from "./pages/MyServices";
 import Profile from "./pages/Profile";  
 import MyServicesSection from "./pages/MyServicePage/MyServicesSection";
+import ForgotPassword from "./pages/auth/password/ForgotPassword";
+import CheckEmail from "./pages/auth/password/CheckEmail";
+import SetPassword from "./pages/auth/password/SetPassword";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Main Pages */}
         <Route path="/" element={<Home />} />
+
+        {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/profile" element={<Profile />} />   
 
         {/* CloudBridge Portal Features */}
         <Route path="/dashboard" element={<Dashboard/>}/>
@@ -25,6 +28,16 @@ function App() {
         <Route path="/price-calculator" element={<PriceCalculator />} />
         <Route path="/services" element={<MyServices />} />
         <Route path="/my-services" element={<MyServicesSection />} />
+        <Route path="/profile" element={<Profile />} />  
+
+        {/* Password Recovery Flow */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/check-email" element={<CheckEmail />} />
+        <Route path="/set-password" element={<SetPassword />} />
+
+        {/* Fallback for 404 */}
+        <Route path="*" element={<div>Page Not Found</div>} />
+
       </Routes>
     </Router>
   );
