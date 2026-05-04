@@ -1,10 +1,10 @@
 import React from "react";
 import StatusCard from "./StatusCard";
 
-import Icon1 from "../../assets/dashboardcardicon/icon1.png";
-import Icon2 from "../../assets/dashboardcardicon/icon2.png";
-import Icon3 from "../../assets/dashboardcardicon/icon3.png";
-import ActionIcon from "../../assets/dashboardcardicon/icon.png";
+import Icon1 from "../../assets/dashboardcardicon/active.png";
+import Icon2 from "../../assets/dashboardcardicon/pending.png";
+import Icon3 from "../../assets/dashboardcardicon/completed.png";
+import ActionIcon from "../../assets/dashboardcardicon/arrow.png";
 
 const StatusCardSection = () => {
   return (
