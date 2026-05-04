@@ -1,131 +1,111 @@
-import React, { useState } from "react";
-import Sidebar from "../components/layout/Sidebar";
-import { User, Mail, Building, Calendar } from "lucide-react";
+import React from 'react';
+import { 
+  LayoutDashboard, 
+  ClipboardList, 
+  Calculator, 
+  Server, 
+  User, 
+  Mail, 
+  Building2, 
+  Calendar,
+  LogOut,
+  Cloud
+} from 'lucide-react';
 
-export default function Profile() {
-  // Form data handle garna state use gareko
-  const [formData, setFormData] = useState({
-    fullName: "Alena Maharjan",
-    email: "alena@example.com",
-    company: "Dakshinkali-Team",
-    memberSince: "April 15, 2026"
-  });
+const SidebarItem = ({ icon: Icon, label, active = false }) => (
+  <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors ${
+    active ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'
+  }`}>
+    <Icon size={20} />
+    <span className="font-medium text-sm">{label}</span>
+  </div>
+);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+const InputField = ({ label, placeholder, icon: Icon }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">
+      {label}
+    </label>
+    <div className="flex items-center gap-3 px-4 py-3 bg-[#F8FAFC] border border-slate-100 rounded-xl focus-within:border-blue-200 transition-all">
+      <Icon size={18} className="text-slate-400" />
+      <input 
+        type="text"
+        placeholder={placeholder}
+        className="bg-transparent w-full text-sm outline-none text-slate-700 placeholder:text-slate-400"
+      />
+    </div>
+  </div>
+);
 
-  const handleSave = () => {
-    console.log("Saving Data:", formData);
-    alert("Changes saved successfully!");
-  };
+const SecurityRow = ({ label }) => (
+  <button className="w-full flex items-center px-4 py-4 bg-[#F8FAFC] border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
+    <span className="text-sm font-medium text-slate-600">{label}</span>
+  </button>
+);
 
+const ProfilePage = () => {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar fixed side ma bascha */}
-      <Sidebar />
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-10">
-        <div className="max-w-4xl mx-auto">
-          
-          {/* Header Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">My Profile</h1>
-            <p className="text-gray-500 mt-1">Manage your account information</p>
+    <div className="flex min-h-screen bg-white font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-slate-100 flex flex-col p-6 gap-8">
+        <div className="flex items-center gap-3 p-3 bg-[#0077b6] text-white rounded-xl shadow-lg shadow-blue-100">
+          <div className="p-1.5 bg-white/20 rounded-lg">
+            <Cloud size={24} fill="white" />
           </div>
+          <div>
+            <h1 className="font-bold text-lg leading-none">CloudBridge</h1>
+            <span className="text-[10px] opacity-80">v2.0.1</span>
+          </div>
+        </div>
 
+        <nav className="flex-1 flex flex-col gap-2">
+          <SidebarItem icon={LayoutDashboard} label="Dashboard" />
+          <SidebarItem icon={ClipboardList} label="Service Request" />
+          <SidebarItem icon={Calculator} label="Price Calculator" />
+          <SidebarItem icon={Server} label="My Services" />
+          <SidebarItem icon={User} label="Profile" active />
+        </nav>
+
+        <div className="pt-4 border-t border-slate-100">
+          <SidebarItem icon={LogOut} label="Logout" />
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-12 overflow-y-auto">
+        <header className="mb-10">
+          <h2 className="text-2xl font-bold text-slate-900">My Profile</h2>
+          <p className="text-sm text-slate-500 mt-1">Manage your account information</p>
+        </header>
+
+        <div className="max-w-[672px] space-y-6">
           {/* Personal Information Card */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 mb-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6">Personal Information</h2>
+          <section className="p-8 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-6">
+            <h3 className="text-base font-bold text-slate-800 mb-2">Personal Information</h3>
             
-            <div className="space-y-5">
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Full Name</label>
-                <div className="relative group">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 w-5 h-5 transition-colors" />
-                  <input 
-                    name="fullName"
-                    type="text" 
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
-                <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 w-5 h-5 transition-colors" />
-                  <input 
-                    name="email"
-                    type="email" 
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="john.doe@company.com"
-                    className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Company */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Company</label>
-                <div className="relative group">
-                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 w-5 h-5 transition-colors" />
-                  <input 
-                    name="company"
-                    type="text" 
-                    value={formData.company}
-                    onChange={handleChange}
-                    className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Member Since (Read-only logic usually) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Member Since</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input 
-                    type="text" 
-                    value={formData.memberSince}
-                    readOnly
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-gray-500 cursor-not-allowed outline-none"
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 gap-5">
+              <InputField label="Full Name" placeholder="Alena Maharjan" icon={User} />
+              <InputField label="Email" placeholder="alena@example.com" icon={Mail} />
+              <InputField label="Company" placeholder="Dakshinkali-Team" icon={Building2} />
+              <InputField label="Member Since" placeholder="April 15, 2026" icon={Calendar} />
             </div>
-          </div>
+          </section>
 
           {/* Security Settings Card */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 mb-8 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6">Security Settings</h2>
+          <section className="p-8 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-6">
+            <h3 className="text-base font-bold text-slate-800 mb-2">Security Settings</h3>
             <div className="space-y-3">
-              <button className="w-full text-left bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium py-4 px-6 rounded-lg transition-all border border-transparent hover:border-blue-100">
-                Change Password
-              </button>
-              <button className="w-full text-left bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium py-4 px-6 rounded-lg transition-all border border-transparent hover:border-blue-100">
-                Enable Two-Factor Authentication
-              </button>
+              <SecurityRow label="Change Password" />
+              <SecurityRow label="Enable Two-Factor Authentication" />
             </div>
-          </div>
+          </section>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-10">
-            <button 
-              onClick={handleSave}
-              className="bg-[#0070BA] hover:bg-[#005ea6] text-white font-semibold py-3 px-12 rounded-lg transition shadow-md sm:flex-none"
-            >
+          {/* Form Actions */}
+          <div className="flex items-center gap-4 pt-4">
+            <button className="px-16 py-3.5 bg-[#0077b6] text-white font-bold rounded-xl shadow-xl shadow-blue-100 hover:bg-[#005f91] transition-all">
               Save Changes
             </button>
-            <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 font-semibold py-3 px-8 rounded-lg transition sm:flex-none">
+            <button className="px-10 py-3.5 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all">
               Cancel
             </button>
           </div>
@@ -133,4 +113,6 @@ export default function Profile() {
       </main>
     </div>
   );
-}
+};
+
+export default ProfilePage;
