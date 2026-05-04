@@ -47,10 +47,10 @@ const ServiceSection = () => {
           <p className="text-sm font-semibold text-[#0070BA] uppercase tracking-wide">
             Features
           </p>
-          <h2 className="text-[32px] leading-[40px] font-bold mt-2">
+          <h2 className="text-[32px] leading-10 font-bold mt-2">
             Enterprise-grade control for modern teams
           </h2>
-          <p className="text-[18px] leading-[28px] text-gray-500 mt-4 max-w-xl">
+          <p className="text-[18px] leading-7 text-gray-500 mt-4 max-w-xl">
             Everything you need to manage your cloud infrastructure at scale, without the complexity.
           </p>
         </div>
@@ -64,7 +64,7 @@ const ServiceSection = () => {
           </div>
 
           {/* RIGHT: Terminal Preview */}
-          <div className="bg-gray-50 rounded-[2rem] p-8 md:p-12 border border-gray-100">
+          <div className="bg-gray-50 rounded-4xl p-8 md:p-12 border border-gray-100">
             <div className="bg-[#0B1220] rounded-xl overflow-hidden shadow-2xl">
               <img
                 src={terminalImg}

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
-import { Link } from "react-router-dom";
 import GridBackground from "../../components/common/GridBackground";
 import Logo from "../../assets/Icon.svg";
 
@@ -9,95 +9,114 @@ const Signup = () => {
   const [type, setType] = useState("individual");
 
   return (
-    <div className="relative min-h-screen bg-white">
-      {/* Grid Background */}
+    <div className="relative flex min-h-screen flex-col items-center justify-start pt-20 bg-white overflow-hidden">
       <GridBackground />
 
-      {/* Container */}
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-screen">
-        
-        {/* Card */}
-        <div className="w-90 p-8 ">
+      <div className="relative flex w-full max-w-7xl flex-col items-center px-8">
+        <div className="flex w-full max-w-90 flex-col">
+          {/* Header Section */}
+          <div className="flex flex-col items-center w-full">
+            {/* Logo -> Title (mb-6) */}
+            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] px-2.5 shadow-[0px_4px_6px_-4px_rgba(11,120,193,0.2),0px_10px_15px_-3px_rgba(11,120,193,0.2)] mb-6">
+      
+              <img src={Logo} alt="logo" className="w-5 h-5" />
+            </div>
 
-          {/* Logo */}
-          <div className="flex justify-center mb-4">
-            <div
-              className="flex items-center justify-center w-10 h-10 rounded-lg"
-              style={{
-                background:
-                  "linear-gradient(135deg, #0B78C1 0%, #074D82 100%)",
-                boxShadow:
-                  "0 10px 15px -3px rgba(11,120,193,0.2), 0 4px 6px -4px rgba(11,120,193,0.2)",
-              }}
-            >
-              <img src={Logo} alt="logo" className="w-4 h-3" />
+            {/* Title + Subtitle */}
+            <div className="flex flex-col items-center text-center w-full">
+              {/* Title -> Subtitle (mb-1) */}
+              <h1 className="text-[24px] leading-tight font-semibold text-[#181D27] mb-1">
+                Create an account
+              </h1>
+              {/* Subtitle -> Toggle (mb-8) */}
+              <p className="text-[14px] text-[#535862] mb-8">
+                Start your private cloud journey today.
+              </p>
             </div>
           </div>
 
-          {/* Title */}
-          <h2 className="text-2xl font-semibold text-center text-gray-900">
-            Create an account
-          </h2>
-          <p className="text-gray-500 text-sm text-center mt-1 mb-5">
-            Start your private cloud journey today
-          </p>
+          {/* Form Section */}
+          <div className="flex flex-col w-full">
+            {/* Account Type Toggle (mb-6) */}
+            <div className="flex bg-[#F9FAFB] border border-[#F2F4F7] rounded-lg p-1 mb-6">
+              <button
+                onClick={() => setType("individual")}
+                className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
+                  type === "individual"
+                    ? "bg-white shadow-sm font-semibold text-[#181D27]"
+                    : "text-[#535862] hover:text-[#181D27]"
+                }`}
+              >
+                Individual
+              </button>
 
-          {/* Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1 mb-5">
-            <button
-              onClick={() => setType("individual")}
-              className={`flex-1 py-1.5 text-sm rounded-md transition ${
-                type === "individual"
-                  ? "bg-white shadow-sm font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              Individual
-            </button>
+              <button
+                onClick={() => setType("company")}
+                className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
+                  type === "company"
+                    ? "bg-white shadow-sm font-semibold text-[#181D27]"
+                    : "text-[#535862] hover:text-[#181D27]"
+                }`}
+              >
+                Company
+              </button>
+            </div>
 
-            <button
-              onClick={() => setType("company")}
-              className={`flex-1 py-1.5 text-sm rounded-md transition ${
-                type === "company"
-                  ? "bg-white shadow-sm font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              Company
-            </button>
+            <form className="flex flex-col w-full">
+              {/* Company Field (only shows if type is company) */}
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  type === "company"
+                    ? "max-h-24 opacity-100 mb-4"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <Input label="Company Name" placeholder="Amalgamated Inc." />
+              </div>
+
+              {/* Email -> Password (mb-4) */}
+              <div className="mb-4">
+                <Input label="Email" placeholder="Enter your email" />
+              </div>
+
+              {/* Password -> Buttons (mb-6) */}
+              <div className="mb-6">
+                <Input
+                  label="Password"
+                  type="password"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col">
+                {/* Create Account -> Google (mb-3) */}
+                <div className="mb-3">
+                  <Button text="Create Account" />
+                </div>
+                {/* Google -> Footer (mb-8) */}
+                <div className="mb-8">
+                  <Button
+                    text="Sign up with Google"
+                    variant="google"
+                    icon="https://cdn-icons-png.flaticon.com/512/281/281764.png"
+                  />
+                </div>
+              </div>
+            </form>
           </div>
 
-          {/* Reserved space to prevent layout shift */}
-          <div
-            className={`transition-all duration-300 overflow-hidden ${
-              type === "company" ? "h-18 opacity-100 mb-4" : "h-0 opacity-0"
-            }`}
-          >
-            <Input label="Company Name" placeholder="Amalgamated Inc." />
-          </div>
+          {/* Footer Link */}
 
-          {/* Common Inputs */}
-          <Input label="Email" placeholder="Enter your email" />
-          <Input label="Password" type="password" placeholder="••••••••" />
-
-          {/* Button */}
-          <Button text="Create Account" />
-
-          {/* Google */}
-          <Button
-            text="Sign in with Google"
-            variant="google"
-            icon="https://cdn-icons-png.flaticon.com/512/281/281764.png"
-          />
-
-          {/* Login link */}
-          <p className="text-center text-sm mt-4 text-gray-600">
+          <p className="text-center text-sm text-[#535862] mb-12">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link
+              to="/login"
+              className="text-blue-600 font-medium hover:underline"
+            >
               Log in
             </Link>
           </p>
-
         </div>
       </div>
     </div>
