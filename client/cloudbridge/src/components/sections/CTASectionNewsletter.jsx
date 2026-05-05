@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../common/Button";
-
+// this is a changed file
 const NewsletterCTA = () => {
   return (
     <section className="bg-white py-16">
