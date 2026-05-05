@@ -10,7 +10,7 @@ export default function DashboardLayout() {
 
       {/* Dashboard Page */}
       <DashboardPage />
-      //remove outlet
+      
     </div>
   );
 }
