@@ -1,66 +1,74 @@
-// import { useState } from "react";
-// // Corrected paths to match your components folder
-// import ServiceCardItem from "../../components/cloud/services/ServiceCardItem";
-// import ServiceFilterGroup from "../../components/cloud/services/ServiceFilterGroup";
 
-// const MyServicesSection = () => {
-//   const [active, setActive] = useState("All");
-
-//   const services = [
-//     {
-//       id: 1,
-//       name: "Production Database",
-//       type: "PostgreSQL Instance",
-//       status: "Active",
-//       cost: "$80/mo",
-//     },
-//     {
-//       id: 2,
-//       name: "Object Storage",
-//       type: "Block Storage - 500GB",
-//       status: "Pending",
-//       cost: "$40/mo",
-//     },
-//   ];
-
-//   const filtered =
-//     active === "All"
-//       ? services
-//       : services.filter((s) => s.status === active);
-
-//   return (
-//     <section className="p-6">
-//       <div className="mb-6">
-//         <h2 className="text-[32px] leading-[40px] font-bold text-gray-900">
-//           My Services
-//         </h2>
-//         <p className="text-[18px] leading-[28px] text-gray-500 mt-2 max-w-xl">
-//           View and manage your cloud services
-//         </p>
-//       </div>
-
-//       <ServiceFilterGroup active={active} setActive={setActive} />
-
-//       <div className="flex flex-col gap-4 mt-8">
-//         {filtered.length > 0 ? (
-//           filtered.map((service) => (
-//             <ServiceCardItem key={service.id} service={service} />
-//           ))
-//         ) : (
-//           <p className="text-gray-500 italic">No services found for "{active}"</p>
-//         )}
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default MyServicesSection;
 import { useState } from "react";
-import ServiceCardItem from "../../components/cloud/services/ServiceCardItem";
-import ServiceFilterGroup from "../../components/cloud/services/ServiceFilterGroup";
-import EmptyState from "../../components/cloud/services/EmptyState";
+import { ServiceIcon, IconButton } from "../../components/cloud/services/ReusableAtoms";
 
-const MyServicesSection = () => {
+const ServiceCard = ({ service }) => (
+  <div className="bg-white border border-slate-200 rounded-lg py-2 px-4 hover:shadow-sm transition">
+
+    {/* Header */}
+   <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+
+      {/* Left */}
+      <div className="flex items-center gap-2">
+        <ServiceIcon type={service.type} />
+
+        <div>
+          <h3 className="text-[12px] font-semibold text-slate-900 leading-tight">
+            {service.name}
+          </h3>
+          <p className="text-[10px] text-slate-500 mt-0.5 ">
+            {service.type}
+          </p>
+        </div>
+      </div>
+
+      {/* Right */}
+      <div className="flex items-center gap-2.5">
+
+        {/* Status */}
+        <span
+          className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1
+            ${
+              service.status === "Active"
+                ? "bg-green-50 text-green-600"
+                : service.status === "Pending"
+                ? "bg-orange-50 text-orange-600"
+                : "bg-gray-100 text-gray-500"
+            }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+          {service.status}
+        </span>
+
+        {/* Eye Button */}
+        <IconButton />
+
+      </div>
+    </div>
+
+    {/* Bottom Section */}
+    <div className="grid grid-cols-3 mt-1.5 text-xs">
+
+      <DataField label="Monthly Cost" value={service.cost} isBold />
+      <DataField label="Requested" value={service.requested} />
+      <DataField label="Deployed" value={service.deployed || "—"} />
+
+    </div>
+  </div>
+);
+
+const DataField = ({ label, value, isBold }) => (
+  <div>
+    <p className="text-[9px] uppercase tracking-wider text-slate-500 mb-0">
+      {label}
+    </p>
+    <p className={`text-[12px] ${isBold ? "font-semibold text-slate-900" : "text-slate-700"}`}>
+      {value}
+    </p>
+  </div>
+);
+
+export default function MyServicesSection() {
   const [active, setActive] = useState("All");
 
   const services = [
@@ -81,7 +89,34 @@ const MyServicesSection = () => {
       cost: "$200/mo",
       requested: "3/10/2026",
       deployed: "3/11/2026",
-    }
+    },
+    {
+      id: 3,
+      name: "Object Storage",
+      type: "Block Storage - 500GB",
+      status: "Pending",
+      cost: "$40/mo",
+      requested: "4/10/2026",
+      deployed: "",
+    },
+    {
+      id: 4,
+      name: "CDN Service",
+      type: "CDN Service",
+      status: "Active",
+      cost: "$150/mo",
+      requested: "2/20/2026",
+      deployed: "2/22/2026",
+    },
+    {
+      id: 5,
+      name: "Analytics Platform",
+      type: "Analytics Service",
+      status: "Cancelled",
+      cost: "$120/mo",
+      requested: "1/5/2026",
+      deployed: "1/10/2026",
+    },
   ];
 
   const filtered =
@@ -90,34 +125,33 @@ const MyServicesSection = () => {
       : services.filter((s) => s.status === active);
 
   return (
-   <div className="px-4 py-6">
-
-      {/* Header */}
-      {/* <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          My Services
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          View and manage your cloud services
-        </p>
-      </header> */}
+    <div className="mt-6">
 
       {/* Filters */}
-      <ServiceFilterGroup active={active} setActive={setActive} />
+      <div className="flex gap-2 mb-4">
+        {["All", "Active", "Pending", "Cancelled"].map((f) => (
+          <button
+            key={f}
+            onClick={() => setActive(f)}
+            className={`text-xs px-3 py-1 rounded-md border transition
+              ${
+                active === f
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
 
-      {/* List */}
-      <div className="mt-6 flex flex-col gap-4">
-        {filtered.length > 0 ? (
-          filtered.map((service) => (
-            <ServiceCardItem key={service.id} service={service} />
-          ))
-        ) : (
-          <EmptyState activeFilter={active} />
-        )}
+      {/* Cards */}
+      <div className="space-y-3">
+        {filtered.map((s) => (
+          <ServiceCard key={s.id} service={s} />
+        ))}
       </div>
 
     </div>
   );
-};
-
-export default MyServicesSection;
+} 
