@@ -7,7 +7,7 @@ const DashboardPage = () => {
     <div className="flex flex-col gap-6 w-full px-6 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">
           Welcome back! Here's an overview of your services.{" "}
         </p>
