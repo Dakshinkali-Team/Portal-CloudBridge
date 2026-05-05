@@ -1,6 +1,5 @@
 import Sidebar from "../components/layout/Sidebar";
 import DashboardPage from "./customer_dashboard/DashboardPage";
-import { Outlet } from "react-router-dom";
 
 export default function DashboardLayout() {
   return (
@@ -11,11 +10,6 @@ export default function DashboardLayout() {
 
       {/* Dashboard Page */}
       <DashboardPage />
-
-      {/* Page Content */}
-      <div className="flex-1 ml-[255px] p-6">
-        <Outlet />
-      </div>
 
     </div>
   );
