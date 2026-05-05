@@ -1,20 +1,20 @@
-import { Outlet } from "react-router-dom";
-import AdminSidebar from "../layout/AdminSidebar.jsx";
+// import { Outlet } from "react-router-dom";
+// import AdminSidebar from "../layout/AdminSidebar.jsx";
 
-const DashboardLayout = () => {
-  return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
-      <AdminSidebar />
+// const DashboardLayout = () => {
+//   return (
+//     <div className="flex min-h-screen bg-[#F8FAFC]">
+//       <AdminSidebar />
       
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
-    </div>
-  );
-};
+//       {/* Main Content Area */}
+//       <main className="flex-1 overflow-y-auto">
+//         <Outlet />
+//       </main>
+//     </div>
+//   );
+// };
 
-export default DashboardLayout;
+// export default DashboardLayout;
 
 
 
