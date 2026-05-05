@@ -1,162 +1,181 @@
 import React, { useState, useMemo } from 'react';
-import { Minus, Plus, Database, Cpu, HardDrive, Share2, Info } from 'lucide-react';
+import { Plus, Minus, Calculator, Info } from 'lucide-react';
+
+const InstanceRow = ({ label, price, value, onAdd, onSub }) => (
+  <div className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+    <div>
+      <h4 className="text-[13px] font-bold text-slate-800 font-sans">{label}</h4>
+      <p className="text-[11px] text-slate-400 font-sans">${price}/mo per instance</p>
+    </div>
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={onSub} 
+        className="p-1 border border-slate-200 rounded text-slate-400 hover:bg-slate-100 transition-colors"
+      >
+        <Minus size={14} />
+      </button>
+      <span className="w-4 text-center text-sm font-bold text-slate-700">{value}</span>
+      <button 
+        onClick={onAdd} 
+        className="p-1 border border-slate-200 rounded text-slate-400 hover:bg-slate-100 transition-colors"
+      >
+        <Plus size={14} />
+      </button>
+    </div>
+  </div>
+);
 
 const PriceCalculator = () => {
-  // States for dynamic calculations
-  const [compute, setCompute] = useState({ small: 3, medium: 2, large: 2 });
+  // 1. States for inputs
+  const [instances, setInstances] = useState({ small: 3, medium: 2, large: 2 });
   const [storage, setStorage] = useState(1500);
   const [bandwidth, setBandwidth] = useState(1700);
-  const [databases, setDatabases] = useState({ postgres: 0, mysql: 0, redis: 0 });
 
-  // Calculation Logic based on image_187c69.png
-  const totals = useMemo(() => {
-    const computeCost = (compute.small * 50) + (compute.medium * 100) + (compute.large * 200);
-    const storageCost = storage * 0.1; // $0.10 per GB
-    const bandwidthCost = bandwidth * 0.05; // $0.05 per GB
-    const dbCost = (databases.postgres * 80) + (databases.mysql * 75) + (databases.redis * 60);
-    
-    return {
-      compute: computeCost,
-      storage: storageCost,
-      bandwidth: bandwidthCost,
-      database: dbCost,
-      grandTotal: computeCost + storageCost + bandwidthCost + dbCost
-    };
-  }, [compute, storage, bandwidth, databases]);
-
-  const updateCount = (type, key, delta) => {
-    if (type === 'compute') {
-      setCompute(prev => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }));
-    } else {
-      setDatabases(prev => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }));
-    }
+  // 2. Constants for Unit Prices
+  const unitPrices = {
+    small: 50,
+    medium: 100,
+    large: 200,
+    storagePerGB: 0.10, // $0.10 per GB
+    bandwidthPerGB: 0.05 // $0.05 per GB
   };
 
+  // 3. Dynamic Calculations using useMemo
+  const computeTotal = useMemo(() => {
+    return (instances.small * unitPrices.small) + 
+           (instances.medium * unitPrices.medium) + 
+           (instances.large * unitPrices.large);
+  }, [instances]);
+
+  const sPrice = useMemo(() => (storage * unitPrices.storagePerGB), [storage]);
+  const bPrice = useMemo(() => (bandwidth * unitPrices.bandwidthPerGB), [bandwidth]);
+
+  const monthlyTotal = useMemo(() => {
+    return (computeTotal + sPrice + bPrice).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }, [computeTotal, sPrice, bPrice]);
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans text-slate-800">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Price Calculator</h1>
-          <p className="text-slate-500">Estimate your monthly costs with transparent pricing</p>
-        </header>
+    <div className="min-h-full bg-[#F8FAFC] p-8">
+      <header className="mb-6">
+        <h2 className="text-2xl font-bold text-slate-900 font-sans">Price Calculator</h2>
+        <p className="text-[13px] text-slate-500 mt-1 font-sans">Estimate your monthly costs with transparent pricing</p>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Inputs */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="flex flex-col lg:flex-row gap-6 max-w-[1200px]">
+        {/* Left Column */}
+        <div className="flex-1 space-y-5">
+          
+          {/* Compute Instances */}
+          <section className="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 mb-4 font-sans">Compute Instances</h3>
+            <InstanceRow 
+              label="Small Instance" price={unitPrices.small} value={instances.small} 
+              onAdd={() => setInstances({...instances, small: instances.small + 1})}
+              onSub={() => setInstances({...instances, small: Math.max(0, instances.small - 1)})}
+            />
+            <InstanceRow 
+              label="Medium Instance" price={unitPrices.medium} value={instances.medium} 
+              onAdd={() => setInstances({...instances, medium: instances.medium + 1})}
+              onSub={() => setInstances({...instances, medium: Math.max(0, instances.medium - 1)})}
+            />
+            <InstanceRow 
+              label="Large Instance" price={unitPrices.large} value={instances.large} 
+              onAdd={() => setInstances({...instances, large: instances.large + 1})}
+              onSub={() => setInstances({...instances, large: Math.max(0, instances.large - 1)})}
+            />
+          </section>
+
+          {/* Storage & Bandwidth - Moveable Sliders */}
+          <section className="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 mb-6 font-sans">Storage & Bandwidth</h3>
             
-            {/* Compute Instances Section */}
-            <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 flex items-center">
-                <Cpu className="w-5 h-5 mr-2 text-blue-600" /> Compute Instances
-              </h2>
-              <div className="space-y-4">
-                {[
-                  { id: 'small', label: 'Small Instance', price: 50 },
-                  { id: 'medium', label: 'Medium Instance', price: 100 },
-                  { id: 'large', label: 'Large Instance', price: 200 },
-                ].map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                    <div>
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-xs text-slate-400">${item.price}/mo per instance</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button onClick={() => updateCount('compute', item.id, -1)} className="p-1 rounded border border-slate-200 hover:bg-slate-50"><Minus className="w-4 h-4"/></button>
-                      <span className="w-8 text-center font-semibold">{compute[item.id]}</span>
-                      <button onClick={() => updateCount('compute', item.id, 1)} className="p-1 rounded border border-slate-200 hover:bg-slate-50"><Plus className="w-4 h-4"/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Storage & Bandwidth Section */}
-            <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-              <h2 className="text-lg font-semibold mb-6 flex items-center">
-                <HardDrive className="w-5 h-5 mr-2 text-blue-600" /> Storage & Bandwidth
-              </h2>
-              <div className="space-y-8">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="font-medium text-sm">Block Storage (GB)</label>
-                    <span className="text-sm font-semibold">${totals.storage.toFixed(2)}/mo</span>
-                  </div>
-                  <input type="range" min="0" max="5000" value={storage} onChange={(e) => setStorage(parseInt(e.target.value))} className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                  <p className="text-xs text-slate-400 mt-2">{storage} GB</p>
+            <div className="space-y-8">
+              <div>
+                <div className="flex justify-between text-[12px] font-bold text-slate-700 mb-3 font-sans">
+                  <span>Block Storage (GB)</span>
+                  <span className="text-slate-500 font-semibold">${sPrice.toFixed(2)}/mo</span>
                 </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="font-medium text-sm">Bandwidth (GB)</label>
-                    <span className="text-sm font-semibold">${totals.bandwidth.toFixed(2)}/mo</span>
-                  </div>
-                  <input type="range" min="0" max="5000" value={bandwidth} onChange={(e) => setBandwidth(parseInt(e.target.value))} className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                  <p className="text-xs text-slate-400 mt-2">{bandwidth} GB</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Database Services Section */}
-            <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 flex items-center">
-                <Database className="w-5 h-5 mr-2 text-blue-600" /> Database Services
-              </h2>
-              <div className="space-y-4">
-                {[
-                  { id: 'postgres', label: 'Postgres', price: 80 },
-                  { id: 'mysql', label: 'Mysql', price: 75 },
-                  { id: 'redis', label: 'Redis', price: 60 },
-                ].map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                    <div>
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-xs text-slate-400">${item.price}/mo per instance</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button onClick={() => updateCount('db', item.id, -1)} className="p-1 rounded border border-slate-200 hover:bg-slate-50"><Minus className="w-4 h-4"/></button>
-                      <span className="w-8 text-center font-semibold">{databases[item.id]}</span>
-                      <button onClick={() => updateCount('db', item.id, 1)} className="p-1 rounded border border-slate-200 hover:bg-slate-50"><Plus className="w-4 h-4"/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* Right Column: Cost Estimate Card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-4">
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-lg">
-                <div className="flex items-center mb-6">
-                  <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                    <Share2 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <h3 className="font-bold text-lg">Cost Estimate</h3>
-                </div>
-                
-                <div className="space-y-3 text-sm border-b border-slate-100 pb-6">
-                  <div className="flex justify-between text-slate-500"><span>Compute</span><span className="font-medium text-slate-800">${totals.compute.toFixed(2)}</span></div>
-                  <div className="flex justify-between text-slate-500"><span>Storage</span><span className="font-medium text-slate-800">${totals.storage.toFixed(2)}</span></div>
-                  <div className="flex justify-between text-slate-500"><span>Bandwidth</span><span className="font-medium text-slate-800">${totals.bandwidth.toFixed(2)}</span></div>
-                  <div className="flex justify-between text-slate-500"><span>Database</span><span className="font-medium text-slate-800">${totals.database.toFixed(2)}</span></div>
-                </div>
-
-                <div className="mt-6 flex justify-between items-baseline mb-6">
-                  <span className="font-bold text-slate-900">Monthly Total</span>
-                  <span className="text-2xl font-black text-blue-600">${totals.grandTotal.toFixed(2)}</span>
-                </div>
-
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold transition-colors shadow-md shadow-blue-200">
-                  Request Quote
-                </button>
+                <input 
+                  type="range" min="0" max="5000" step="50"
+                  value={storage}
+                  onChange={(e) => setStorage(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0077b6]" 
+                />
+                <span className="text-[11px] text-slate-400 mt-2 block font-medium font-sans">{storage} GB</span>
               </div>
 
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start">
-                <Info className="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-blue-800 leading-relaxed">
-                  Prices shown are estimates. Final pricing may vary based on usage and contract terms.
-                </p>
+              <div>
+                <div className="flex justify-between text-[12px] font-bold text-slate-700 mb-3 font-sans">
+                  <span>Bandwidth (GB)</span>
+                  <span className="text-slate-500 font-semibold">${bPrice.toFixed(2)}/mo</span>
+                </div>
+                <input 
+                  type="range" min="0" max="5000" step="50"
+                  value={bandwidth}
+                  onChange={(e) => setBandwidth(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0077b6]" 
+                />
+                <span className="text-[11px] text-slate-400 mt-2 block font-medium font-sans">{bandwidth} GB</span>
               </div>
             </div>
+          </section>
+
+          {/* Database Services */}
+          <section className="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 mb-4 font-sans">Database Services</h3>
+            <InstanceRow label="Postgres" price="80" value={0} onAdd={()=>{}} onSub={()=>{}} />
+            <InstanceRow label="Mysql" price="75" value={0} onAdd={()=>{}} onSub={()=>{}} />
+            <InstanceRow label="Redis" price="60" value={0} onAdd={()=>{}} onSub={()=>{}} />
+          </section>
+        </div>
+
+        {/* Right Column: Dynamic Cost Estimate */}
+        <div className="w-full lg:w-[350px] space-y-4">
+          <div className="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm lg:sticky lg:top-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <Calculator size={20} />
+              </div>
+              <h3 className="font-bold text-slate-800 font-sans">Cost Estimate</h3>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <div className="flex justify-between text-[13px] font-sans">
+                <span className="text-slate-400 font-medium">Compute</span>
+                <span className="font-bold text-slate-700">${computeTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-[13px] font-sans">
+                <span className="text-slate-400 font-medium">Storage</span>
+                <span className="font-bold text-slate-700">${sPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-[13px] font-sans">
+                <span className="text-slate-400 font-medium">Bandwidth</span>
+                <span className="font-bold text-slate-700">${bPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-[13px] font-sans">
+                <span className="text-slate-400 font-medium">Database</span>
+                <span className="font-bold text-slate-700">$0.00</span>
+              </div>
+            </div>
+
+            <div className="pt-5 border-t border-slate-100 flex justify-between items-center mb-8">
+              <span className="font-bold text-slate-800 text-[13px] font-sans">Monthly Total</span>
+              <span className="text-2xl font-black text-[#0077b6] tracking-tighter font-sans">${monthlyTotal}</span>
+            </div>
+
+            <button className="w-full py-3.5 bg-[#0077b6] text-white text-[14px] font-bold rounded-xl shadow-lg shadow-blue-100 hover:bg-[#005f91] active:scale-[0.95] transition-all">
+              Request Quote
+            </button>
+          </div>
+
+          <div className="p-4 bg-blue-50/40 border border-blue-100 rounded-xl flex gap-3">
+            <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-blue-600/80 leading-relaxed font-medium font-sans">
+              Prices shown are estimates. Final pricing may vary based on usage and contract terms.
+            </p>
           </div>
         </div>
       </div>
