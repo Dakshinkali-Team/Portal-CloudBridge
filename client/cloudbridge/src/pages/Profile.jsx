@@ -2,6 +2,7 @@ import React from 'react';
 import { User, Mail, Building2, Calendar } from 'lucide-react';
 import Sidebar from '../components/layout/Sidebar'; 
 
+// ✅ FIX: removed readOnly so input editable
 const InputField = ({ label, placeholder, icon: Icon }) => (
   <div className="flex flex-col gap-1">
     <label className="text-[11px] font-semibold text-slate-500 ml-0.5">
@@ -13,7 +14,6 @@ const InputField = ({ label, placeholder, icon: Icon }) => (
         type="text"
         placeholder={placeholder}
         className="bg-transparent w-full text-[13px] outline-none text-slate-700 placeholder:text-slate-500"
-        readOnly 
       />
     </div>
   </div>
@@ -30,7 +30,6 @@ const ProfilePage = () => {
     <div className="flex h-screen bg-white font-sans overflow-hidden">
       <Sidebar />
 
-      {/* Main Content: Adjusted padding to match Figma (image_20037b.png) */}
       <main className="flex-1 h-full overflow-y-auto p-8 bg-slate-50/50">
         <header className="mb-6 max-w-[700px]">
           <h2 className="text-2xl font-bold text-slate-900">My Profile</h2>
@@ -38,7 +37,8 @@ const ProfilePage = () => {
         </header>
 
         <div className="max-w-[700px] space-y-5 pb-8">
-          {/* Personal Information Card */}
+
+          {/* Personal Info */}
           <section className="p-6 bg-white border border-slate-200/60 rounded-xl shadow-sm space-y-4">
             <h3 className="text-base font-bold text-slate-800">Personal Information</h3>
             
@@ -50,16 +50,16 @@ const ProfilePage = () => {
             </div>
           </section>
 
-          {/* Security Settings Card */}
+          {/* Security */}
           <section className="p-6 bg-white border border-slate-200/60 rounded-xl shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-800">Security Settings</h3>
-            <div className="space-y-2">
+            <h3 className="text-base text-DM Sans font-size-20px leading-28px font-family-semibold text-slate-800">Security Settings</h3>
+            <div className="font-family-Work Sans font-size-16px leading-24px font-weight-500 font-style-medium space-y-2">
               <SecurityRow label="Change Password" />
               <SecurityRow label="Enable Two-Factor Authentication" />
             </div>
           </section>
 
-          {/* Form Actions: Aligned to look exactly like the screenshot */}
+          {/* Buttons */}
           <div className="flex items-center gap-3 pt-2">
             <button className="flex-1 py-3 bg-[#0077b6] text-white font-bold rounded-lg shadow-md hover:bg-[#005f91] transition-all text-sm">
               Save Changes
@@ -68,6 +68,7 @@ const ProfilePage = () => {
               Cancel
             </button>
           </div>
+
         </div>
       </main>
     </div>
