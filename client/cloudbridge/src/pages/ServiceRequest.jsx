@@ -50,8 +50,8 @@ const ServiceRequest = () => {
 
       <main className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <h1 className="text-4xl font-bold">New Service Request</h1>
-          <p className="text-left -mt-4 pb-2">
+          <h1 className="text-DM Sans text-3xl font-bold">New Service Request</h1>
+          <p className="text-Work Sans text-regular text-base text-left -mt-4 pb-2 text-[#45556C]">
             Select the cloud services you need and submit the request
           </p>
 
@@ -139,12 +139,12 @@ const ServiceRequest = () => {
           <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm min-h-25">
             <div className="flex items-center gap-3">
               <img src={EnterpriseIcon} className="w-6 h-6 shrink-0" />
-              <h2 className="font-semibold whitespace-nowrap">
+              <h2 className="text-Work Sans text-sm font-semibold whitespace-nowrap">
                 Enterprise Support Included
               </h2>
             </div>
 
-            <p className="mt-2 pl-9">
+            <p className="mt-2 pl-9 text-Work Sans text-regular">
               24/7 support and 99.9% uptime SLA with all services.
             </p>
           </div>
