@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
 /* :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -117,4 +117,6 @@ code {
 @theme {
   --font-dm-sans: "DM Sans", sans-serif;
   --font-work-sans: "Work Sans", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-jetbrains-mono: "JetBrains Mono", monospace;
 }

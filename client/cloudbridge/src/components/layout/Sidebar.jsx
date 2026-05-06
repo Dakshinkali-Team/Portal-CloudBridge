@@ -34,7 +34,7 @@ const Sidebar = () => {
             <h1 className="font-dm-sans text-[18px] font-semibold text-[#0F172B] leading-7">
               CloudBridge
             </h1>
-            <p className="text-xs text-[#64748B]">v2.0.1</p>
+            <p className="font-jetbrains-mono text-xs text-[#64748B]">v2.0.1</p>
           </div>
         </Link>
       </div>
