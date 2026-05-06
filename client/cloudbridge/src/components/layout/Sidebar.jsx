@@ -31,9 +31,10 @@ const Sidebar = () => {
           </div>
 
           <div className="flex flex-col justify-center items-start h-11">
-            <h1 className="text-[18px] font-semibold text-[#0F172B] leading-7">
+            <h1 className="font-dm-sans text-[18px] font-semibold text-[#0F172B] leading-7">
               CloudBridge
             </h1>
+            <p className="text-xs text-[#64748B]">v2.0.1</p>
           </div>
         </Link>
       </div>
