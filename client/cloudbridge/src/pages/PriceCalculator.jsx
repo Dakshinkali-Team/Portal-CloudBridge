@@ -3,14 +3,11 @@ import PriceCalculatorPage from "./price-calculator/PriceCalculatorPage";
 
 export default function PriceCalculator() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      
-      {/* Sidebar */}
+    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
       <Sidebar />
-
-      {/* Price Calculator Page */}
-      <PriceCalculatorPage />
-      
+      <main className="flex-1 overflow-y-auto">
+        <PriceCalculatorPage />
+      </main>
     </div>
   );
 }
