@@ -21,13 +21,13 @@ const ServiceItem = ({ name, price, checked, onChange }) => {
         />
 
         {/* TEXT */}
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-Work Sans font-medium text-base text-[#0F172B]">
           {name}
         </span>
       </div>
 
       {/* RIGHT SIDE */}
-      <span className="text-sm font-semibold text-gray-900">
+      <span className="text-JetBrains Mono font-bold text-base text-[#0F172B]">
         ${price}/mo
       </span>
     </div>
