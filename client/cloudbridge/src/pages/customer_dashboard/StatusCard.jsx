@@ -20,10 +20,10 @@ const StatusCard = ({ icon, value, label, bgColor, actionIcon }) => {
       </div>
 
       {/* MIDDLE */}
-      <h2 className="text-[24px] font-semibold text-[#0F172B] leading-[32px]">{value}</h2>
+      <h2 className="font-family-inter text-[30px] fontweight-700 font-bold text-[#0F172B] leading-[36px]">{value}</h2>
 
       {/* BOTTOM */}
-      <p className="text-[14px] text-[#45556C] leading-[20px]">{label}</p>
+      <p className="font-family-inter text-[14px] fontweight-400 font-regular text-[#45556C] leading-[20px]">{label}</p>
 
     </div>
   );

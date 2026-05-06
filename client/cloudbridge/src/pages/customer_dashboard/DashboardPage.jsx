@@ -4,22 +4,29 @@ import ActionSection from "./ActionSection";
 import SupportBanner from "../../components/sections/SupportBanner";
 const DashboardPage = () => {
   return (
-    <div className="flex flex-col gap-6 w-full px-6 py-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Welcome back! Here's an overview of your services.{" "}
-        </p>
-      </div>
-      {/* Top Section — full width */}
-      <StatusCardSection />
-      {/* Bottom Section — full width */}
-      <ActionSection />{" "}
+   <div className="w-[1281px] h-[990px] p-[32px] pb-[70px] flex flex-col gap-[32px] bg-[#F8FAFC]">
 
-      {/* <!-- Bottom Section — full width --> */}
-      <SupportBanner />
-    </div>
+  {/* Header */}
+  <div className="flex flex-col gap-[8px]">
+    <h1 className="font-family-inter font-bold text-[30px] leading-[36px] text-[#0F172B]">
+      Dashboard
+    </h1>
+
+    <p className="font-family-inter font-normal text-[16px] leading-[24px] text-[#45556C]">
+      Welcome back! Here's an overview of your services.
+    </p>
+  </div>
+
+  {/* Top Cards */}
+  <StatusCardSection />
+
+  {/* Middle Section */}
+  <ActionSection />
+
+  {/* Bottom Section */}
+  <SupportBanner />
+
+</div>
   );
 };
 export default DashboardPage;
