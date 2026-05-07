@@ -1,10 +1,10 @@
 // FeatureSection.jsx
 import React from "react";
 import FeatureCard from "./FeatureCard.jsx";
-import IconConfigure from "../../assets/icon1.png";
-import IconQuote from "../../assets/icon2.png";
-import IconApprove from "../../assets/icon3.png";
-import IconProvision from "../../assets/icon4.png";
+import IconConfigure from "../../assets/stepcardicon/configure.png";
+import IconQuote from "../../assets/stepcardicon/quote.png";
+import IconApprove from "../../assets/stepcardicon/approve.png";
+import IconProvision from "../../assets/stepcardicon/provision.png";
 
 const FeatureSection = () => {
   const features = [
