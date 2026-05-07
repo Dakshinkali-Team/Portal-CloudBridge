@@ -109,7 +109,7 @@ function SummaryStats({ requests }) {
   ];
 
   return (
-    <div className="grid pt-5 grid-cols-2 lg:grid-cols-4 gap-3 mt-4 w-full">
+    <div className="grid pt-5 grid-cols-2 lg:grid-cols-4 gap-3 w-full mb-8">
       {stats.map((s) => (
         <div
           key={s.label}
@@ -143,24 +143,24 @@ export default function AdminServiceRequest() {
     // Root: sidebar + main side by side, full viewport height
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
 
-      {/* ── Sidebar (fixed width, never shrinks) ──
-      <AdminSidebar/> */}
 
       {/* ── Main scrollable area ── */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
-
+      <main className="flex-1 min-w-0">
         {/* Inner content with consistent padding */}
-        <div className="px-6 lg:px-8 py-8 w-full">
+        <div className="w-full">
 
           {/* Header */}
-          <div className="mb-7">
-            <h1 className="font-dm-sans text-2xl lg:text-3xl font-bold text-[#0F172B]">
+          <div className="mb-2">
+            <h1 className="font-dm-sans text-3xl font-bold text-[#0F172B]">
               Service Request Management
             </h1>
-            <p className="font-work-sans text-sm lg:text-base text-slate-400 mt-1">
+            <p className="font-work-sans text-base text-[#45556C] mt-1">
               Review and manage customer service requests
             </p>
           </div>
+
+           {/* Summary stat cards */}
+          <SummaryStats requests={requests} />
 
           {/* Tab buttons */}
           <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -228,10 +228,10 @@ export default function AdminServiceRequest() {
 
                       {/* Price */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="font-work-sans text-base font-semibold text-[#0F172B]">
+                        <span className="font-jetbrains-mono text-base font-semibold text-[#0F172B]">
                           ${req.price}
                         </span>
-                        <span className="font-work-sans text-base font-semibold text-[#0F172B]">/mo</span>
+                        <span className="font-jetbrains-mono text-base font-semibold text-[#0F172B]">/mo</span>
                       </td>
 
                       {/* Request Date */}
@@ -259,8 +259,7 @@ export default function AdminServiceRequest() {
             </table>
           </div>
 
-          {/* Summary stat cards */}
-          <SummaryStats requests={requests} />
+         
         </div>
       </main>
     </div>
