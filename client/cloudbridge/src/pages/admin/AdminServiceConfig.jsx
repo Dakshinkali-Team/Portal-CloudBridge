@@ -1,5 +1,5 @@
 import { useState } from "react";
-// import AdminSidebar from "./AdminSidebar.jsx";
+
 import Button from '../../components/layout/components/Button.jsx';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -77,20 +77,17 @@ export default function AdminServiceConfig() {
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
 
-      
-      {/* <AdminSidebar /> */}
-
       {/* Main */}
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="px-6 lg:px-8 py-7 w-full">
+        <div className="w-full">
 
           {/* ── Header row ── */}
           <div className="flex items-start justify-between gap-4 mb-8">
             <div>
-              <h1 className="font-dm-sans text-2xl lg:text-3xl font-bold text-[#0F172B] pb-1">
+              <h1 className="font-dm-sans text-3xl font-bold text-[#0F172B] pb-1">
                 Service Configuration
               </h1>
-              <p className="font-work-sans text-sm lg:text-base text-[#45556C] mt-1">
+              <p className="font-work-sans text-base text-[#45556C] mt-1">
                 Manage available cloud services and pricing
               </p>
             </div>
@@ -159,7 +156,7 @@ export default function AdminServiceConfig() {
 
                       {/* Price/Month */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="font-work-sans text-base font-bold text-[#0F172B]">
+                        <span className="font-jetbrains-mono text-base font-bold text-[#0F172B]">
                           ${svc.price}
                         </span>
                       </td>
