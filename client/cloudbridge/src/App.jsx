@@ -3,14 +3,6 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 
 import Home from "./pages/Home";
-import ServiceRequest from "./pages/ServiceRequest";
-import PriceCalculator from "./pages/PriceCalculator";
-import MyServices from "./pages/MyServices";
-import Profile from "./pages/Profile";  
-import MyServicesSection from "./pages/MyServicePage/MyServicesSection";
-import ForgotPassword from "./pages/auth/password/ForgotPassword";
-import CheckEmail from "./pages/auth/password/CheckEmail";
-import SetPassword from "./pages/auth/password/SetPassword";
 
 import Dashboard from "./pages/Dashboard";
 import ServiceRequest from "./pages/ServiceRequest";

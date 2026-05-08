@@ -3,14 +3,15 @@ import DashboardPage from "./customer_dashboard/DashboardPage";
 
 export default function Dashboard() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Dashboard Page */}
+      <main className="flex-1 overflow-y-auto">
+         {/* Dashboard Page */}
       <DashboardPage />
-      
+      </main> 
     </div>
   );
 }
