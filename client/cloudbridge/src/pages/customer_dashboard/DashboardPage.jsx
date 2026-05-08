@@ -2,31 +2,33 @@ import React from "react";
 import StatusCardSection from "./StatusCardSection";
 import ActionSection from "./ActionSection";
 import SupportBanner from "../../components/sections/SupportBanner";
+
 const DashboardPage = () => {
   return (
-   <div className="w-[1281px] h-[990px] p-[32px] pb-[70px] flex flex-col gap-[32px] bg-[#F8FAFC]">
+    <div className="w-full min-h-screen bg-[#F8FAFC] p-8 flex flex-col gap-8">
+      
+      {/* ================= HEADER ================= */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-[30px] leading-[36px] font-bold text-[#0F172B] font-inter">
+          Dashboard
+        </h1>
 
-  {/* Header */}
-  <div className="flex flex-col gap-[8px]">
-    <h1 className="font-family-inter font-bold text-[30px] leading-[36px] text-[#0F172B]">
-      Dashboard
-    </h1>
+        <p className="text-[16px] leading-[24px] font-normal text-[#45556C] font-inter">
+          Welcome back! Here's an overview of your services.
+        </p>
+      </div>
 
-    <p className="font-family-inter font-normal text-[16px] leading-[24px] text-[#45556C]">
-      Welcome back! Here's an overview of your services.
-    </p>
-  </div>
+      {/* ================= STATUS CARDS ================= */}
+      <StatusCardSection />
 
-  {/* Top Cards */}
-  <StatusCardSection />
+      {/* ================= ACTION SECTION ================= */}
+      <ActionSection />
 
-  {/* Middle Section */}
-  <ActionSection />
+      {/* ================= SUPPORT BANNER ================= */}
+      <SupportBanner />
 
-  {/* Bottom Section */}
-  <SupportBanner />
-
-</div>
+    </div>
   );
 };
+
 export default DashboardPage;
