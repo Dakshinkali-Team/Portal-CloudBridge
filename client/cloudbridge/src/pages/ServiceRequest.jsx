@@ -45,10 +45,10 @@ const ServiceRequest = () => {
   const count = selected.length;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto">
         <div className="lg:col-span-2 space-y-6">
           <h1 className="text-DM Sans text-3xl font-bold">New Service Request</h1>
           <p className="text-Work Sans text-regular text-base text-left -mt-4 pb-2 text-[#45556C]">

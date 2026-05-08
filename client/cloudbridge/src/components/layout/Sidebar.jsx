@@ -21,7 +21,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-63.75 h-screen flex flex-col bg-white border-r border-[#E2E8F0]">
+    <div className=" w-66.8 h-screen flex flex-col bg-white border-r border-[#E2E8F0]">
       
       {/* ================= LOGO CONTAINER ================= */}
       <div className="flex flex-col w-63.75 h-23.25 px-6 pt-6 pb-px border-b border-[#E2E8F0]">
@@ -40,44 +40,45 @@ const Sidebar = () => {
       </div>
 
       {/* ================= NAVIGATION ================= */}
-      <div className="flex flex-col w-63.75 flex-1 px-4 pt-4 gap-1">
-        {navItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
-
-          return (
-            <Link
-              key={index}
-              to={item.path}
-              className={`flex h-12 px-4 items-center gap-3 rounded-lg w-full transition-colors
-                ${isActive ? "bg-[#EFF6FF]" : "hover:bg-gray-100"}
-              `}
-            >
-              <img src={item.icon} alt="" className="w-5 h-5" />
-              <div className="flex justify-center items-center">
+       <div className="flex-1 px-4 py-4 flex flex-col gap-2">
+          {navItems.map((item, index) => {
+            const isActive = location.pathname === item.path;
+      
+            return (
+              <Link
+                key={index}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg
+                  ${isActive ? "bg-[#E1F2FB]" : "hover:bg-gray-100"}
+                `}
+              >
+                <img src={item.icon} className="w-5 h-5" />
+      
                 <span
-                  className={`text-[16px] font-medium leading-6
+                  className={`font-WorkSans text-[16px] leading-[24px] font-medium
                     ${isActive ? "text-[#0B78C1]" : "text-[#45556C]"}
                   `}
                 >
                   {item.name}
                 </span>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
+        </div>
+      
+        {/* LOGOUT */}
+        <div className="border-t border-[#E5E8ED] px-4 py-4">
+          <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg hover:bg-gray-100">
+            <img src={LogoutIcon} className="w-5 h-5" />
+      
+            <span className="font-WorkSans text-[16px] leading-[24px] font-medium text-[#475569]">
+              Logout
+            </span>
+          </button>
+        </div>
+      
       </div>
-
-      {/* ================= LOGOUT CONTAINER ================= */}
-      <div className="flex flex-col w-63.75 h-20.25 px-4 pt-4.25 border-t border-[#E2E8F0]">
-        <button className="flex h-12 px-4 items-center gap-3 rounded-lg w-full hover:bg-gray-100 transition-colors">
-          <img src={LogoutIcon} alt="logout" className="w-5 h-5" />
-          <span className="text-[16px] font-medium text-[#45556C] leading-6">
-            Logout
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-};
+        );
+      };
 
 export default Sidebar;

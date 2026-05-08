@@ -3,9 +3,9 @@ import MyServicesSection from "./MyServicePage/MyServicesSection";
 
 export default function MyServices() {
   return (
-    <div className="flex min-h-screen bg-[#FDFDFD]">
+    <div className="flex h-screen bg-[#FDFDFD] overflow-hidden">
       <Sidebar />
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto">
         <div className="pt-6 pl-4 pr-9 max-w-9xl">
           <header className="mb-2">
             <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">
