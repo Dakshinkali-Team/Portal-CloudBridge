@@ -23,9 +23,9 @@ const SystemAlerts = () => {
   return (
     <div className="w-full bg-white border border-[#E2E8F0] rounded-xl p-5 sm:p-6 flex flex-col gap-5 sm:gap-6">
 
-      <h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0F172B] font-[DM Sans]">
+      <h3 className="text-[20px] font-weight-600 leading-[28px] font-semibold text-[#0F172B] font-[DM Sans]">
         System Alerts
-      </h2>
+      </h3>
 
       <div className="flex flex-col gap-4">
         {alerts.map((item, index) => (

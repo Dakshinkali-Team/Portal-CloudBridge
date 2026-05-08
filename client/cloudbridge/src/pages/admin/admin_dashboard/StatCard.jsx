@@ -36,7 +36,7 @@ const StatCard = ({ icon, trend, value, label, iconBgColor, trendColor }) => {
 
       {/* Label */}
       <p
-        className="w-[76px] h-[20px] text-[14px] font-normal leading-[20px] tracking-[0px] text-[#45556C]"
+        className="w-[125px] h-[20px] text-[14px] font-normal leading-[20px] tracking-[0px] text-[#45556C]"
         style={{ fontFamily: "'Work Sans', sans-serif" }}
       >
         {label}
