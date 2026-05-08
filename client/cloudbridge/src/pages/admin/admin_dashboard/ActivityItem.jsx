@@ -69,7 +69,7 @@ const ActivityItem = ({
           {/* REQUEST CONTENT */}
           {type === "request" && (
             <>
-              <h3 className="text-[16px] font-medium text-[#0F172B] font-[Work Sans] truncate">
+              <h3 className="text-[14px] font-medium text-[#0F172B] font-[Work Sans] truncate">
                 {company}
               </h3>
 
