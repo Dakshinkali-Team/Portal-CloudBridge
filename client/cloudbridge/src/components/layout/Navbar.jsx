@@ -47,11 +47,11 @@ const Navbar = () => {
         {/* RIGHT SECTION */}
         <div className="hidden md:flex items-center gap-5">
           <Link to="/login">
-            <Button as="a" href="#" variant="secondary">Log in</Button>
+            <Button href="#" variant="secondary">Log in</Button>
           </Link> 
 
           <Link to="/signup"> 
-            <Button as="a" href="#">Get Started</Button>
+            <Button href="#">Get Started</Button>
           </Link>
         </div>
       </nav>
