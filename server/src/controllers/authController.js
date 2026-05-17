@@ -32,6 +32,13 @@ export const registerUser = async (req, res) => {
       },
     });
 
+    // GENERATE TOKEN
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -42,6 +49,7 @@ export const registerUser = async (req, res) => {
       },
     });
   } catch (err) {
+    console.log("REGISTER ERROR:", err.message);
     res.status(500).json({
       error: err.message,
     });
