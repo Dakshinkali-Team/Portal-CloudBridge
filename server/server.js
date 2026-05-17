@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-
+import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
 import { ROLES } from "./src/constants/roles.js";
@@ -8,7 +8,12 @@ import { ROLES } from "./src/constants/roles.js";
 dotenv.config();
 
 const app = express();
-
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // AUTH ROUTES
