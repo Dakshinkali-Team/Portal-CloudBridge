@@ -137,6 +137,7 @@ import Button from "../../components/common/Button";
 import GridBackground from "../../components/common/GridBackground";
 import Logo from "../../assets/Icon.svg";
 import http from '../../utils/http.js';
+import { API_BASE_URL } from "../../constants.js";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -163,7 +164,7 @@ const Signup = () => {
     };
 
     try {
-      const { data } = await http.post("/auth/register", payload);
+      const { data } = await http.post(`${API_BASE_URL}/auth/register`, payload);
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
