@@ -1,3 +1,7 @@
+// =============================================================
+// CloudBridge — schema.prisma (FIXED)
+// =============================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,17 +11,153 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===================== USER =====================
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(CUSTOMER)
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  password    String
+  role        Role         @default(CUSTOMER)
+  status        Status         @default(PENDING)
+  accountType AccountType @default(INDIVIDUAL)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  requestsAsCustomer ServiceRequest[] @relation("CustomerRequests")
+  requestsAsReviewer ServiceRequest[] @relation("ReviewerRequests")
+}
+
+// ===================== SERVICE =====================
+model Service {
+  id             Int    @id @default(autoincrement())
+  name           String
+  specifications String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants     ServiceVariant[]
+  requestItems RequestItem[]
+}
+
+// ===================== SERVICE VARIANT =====================
+model ServiceVariant {
+  id Int @id @default(autoincrement())
+
+  serviceId Int
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  basePrice       Float
+  currency        String
+  billingInterval String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attributes   VariantAttribute[]
+  requestItems RequestItem[]
+}
+
+// ===================== VARIANT ATTRIBUTE =====================
+model VariantAttribute {
+  id Int @id @default(autoincrement())
+
+  serviceVariantId Int
+  serviceVariant   ServiceVariant @relation(fields: [serviceVariantId], references: [id], onDelete: Cascade)
+
+  key         String
+  unit        String?
+  valueNumber Float?
+  valueText   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// ===================== SERVICE REQUEST =====================
+model ServiceRequest {
+  id Int @id @default(autoincrement())
+
+  customerId Int
+  reviewerId Int?
+
+  customer User  @relation("CustomerRequests", fields: [customerId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ReviewerRequests", fields: [reviewerId], references: [id])
+
+  status String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items RequestItem[]
+}
+
+// ===================== REQUEST ITEM =====================
+model RequestItem {
+  id Int @id @default(autoincrement())
+
+  requestId        Int
+  serviceId        Int
+  serviceVariantId Int
+
+  request        ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  service        Service        @relation(fields: [serviceId], references: [id])
+  serviceVariant ServiceVariant @relation(fields: [serviceVariantId], references: [id])
+
+  unitPriceSnap Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===================== ENUMS =====================
 enum Role {
   CUSTOMER
   ADMIN
+}
+
+enum AccountType {
+  INDIVIDUAL
+  COMPANY
+}
+
+// ===================== SERVICE CATALOG =====================
+model ServiceCatalog {
+  id          Int             @id @default(autoincrement())
+  name        String
+  category    ServiceCategory
+  description String?
+
+  basePrice Float @map("base_price")
+
+  hasSliders   Boolean @default(false) @map("has_sliders")
+  vcpuPrice    Float   @default(0.0) @map("vcpu_price")
+  ramPrice     Float   @default(0.0) @map("ram_price")
+  storagePrice Float   @default(0.0) @map("storage_price")
+
+  isFixedVariant Boolean @default(false) @map("is_fixed_variant")
+  variantSizeGb  Int     @default(0) @map("variant_size_gb")
+
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("service_catalog")
+}
+
+enum ServiceCategory {
+  COMPUTE
+  DATABASE
+  STORAGE
+  NETWORK
+}
+
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  PENDING
 }

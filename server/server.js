@@ -2,72 +2,51 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
+import serviceRoutes from "./src/routes/serviceRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
+import { adminMiddleware } from "./src/middleware/adminMiddleware.js"; // ✅ new
 import { ROLES } from "./src/constants/roles.js";
 
 dotenv.config();
 
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
-// AUTH ROUTES
+// ==========================================
+// APPLICATION ROUTE GATEWAYS
+// ==========================================
+
+// AUTH PATHWAY
 app.use("/api/auth", authRoutes);
 
-// TEST ROUTE
-app.get("/", (req, res) => {
-  res.send("Server Running 🚀");
+// ADMIN SERVICE CONFIGURATIONS PATHWAY
+// authMiddleware + adminMiddleware applied to entire admin router
+app.use("/api/admin/services", authMiddleware, adminMiddleware, serviceRoutes);
+
+// HEALTH DIAGNOSTIC ROOT INTERCEPTOR
+app.get("/", (req, res) => res.send("Server Running 🚀"));
+
+// ==========================================
+// PROTECTED ROUTE ENTITIES (DASHBOARDS)
+// ==========================================
+
+// CUSTOMER DASHBOARD SECURITY GATEWAY
+app.get("/api/customer/dashboard", authMiddleware, (req, res) => {
+  if (req.user.role !== ROLES.CUSTOMER) {
+    return res.status(403).json({ message: "Customer access only" });
+  }
+  res.json({ message: "Welcome Customer Dashboard", user: req.user });
 });
 
-// CUSTOMER DASHBOARD
-app.get(
-  "/api/customer/dashboard",
-  authMiddleware,
-  (req, res) => {
-    if (req.user.role !== ROLES.CUSTOMER) {
-      return res.status(403).json({
-        message: "Customer access only",
-      });
-    }
-
-    res.json({
-      message: "Welcome Customer Dashboard",
-      user: req.user,
-    });
+// ADMIN DASHBOARD SECURITY GATEWAY
+app.get("/api/admin/dashboard", authMiddleware, (req, res) => {
+  if (req.user.role !== ROLES.ADMIN && req.user.role !== ROLES.SUPER_ADMIN) {
+    return res.status(403).json({ message: "Admin access only" });
   }
-);
-
-// ADMIN DASHBOARD
-app.get(
-  "/api/admin/dashboard",
-  authMiddleware,
-  (req, res) => {
-    if (
-      req.user.role !== ROLES.ADMIN &&
-      req.user.role !== ROLES.SUPER_ADMIN
-    ) {
-      return res.status(403).json({
-        message: "Admin access only",
-      });
-    }
-
-    res.json({
-      message: "Welcome Admin Dashboard",
-      user: req.user,
-    });
-  }
-);
-
-const PORT = 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  res.json({ message: "Welcome Admin Dashboard", user: req.user });
 });
 
-
-// this is server.js
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
