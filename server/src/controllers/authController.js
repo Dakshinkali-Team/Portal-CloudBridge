@@ -6,7 +6,11 @@ import { ROLES } from "../constants/roles.js";
 // REGISTER
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, accountType } = req.body;
+    const normalizedAccountType =
+      String(accountType).trim().toUpperCase() === "COMPANY"
+        ? "COMPANY"
+        : "INDIVIDUAL";
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -33,7 +37,8 @@ export const registerUser = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        role: role || ROLES.CUSTOMER,
+        role: ROLES.CUSTOMER,
+        accountType: normalizedAccountType,
       },
     });
 
@@ -46,6 +51,8 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
+      token,
+      role: user.role,
       user: {
         id: user.id,
         name: user.name,
@@ -101,6 +108,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
+      role: user.role,
       user: {
         id: user.id,
         name: user.name,

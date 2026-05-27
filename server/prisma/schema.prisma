@@ -13,12 +13,11 @@ datasource db {
 
 // ===================== USER =====================
 model User {
-  id          Int          @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
-  email       String       @unique
+  email       String      @unique
   password    String
-  role        Role         @default(CUSTOMER)
-  status        Status         @default(PENDING)
+  role        Role        @default(CUSTOMER)
   accountType AccountType @default(INDIVIDUAL)
 
   createdAt DateTime @default(now())
@@ -31,9 +30,10 @@ model User {
 
 // ===================== SERVICE =====================
 model Service {
-  id             Int    @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   name           String
   specifications String
+  category       ServiceCategory
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -154,7 +154,6 @@ enum ServiceCategory {
   STORAGE
   NETWORK
 }
-
 
 enum Status {
   ACTIVE

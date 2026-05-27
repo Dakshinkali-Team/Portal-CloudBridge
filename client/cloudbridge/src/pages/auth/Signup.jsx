@@ -1,220 +1,110 @@
-// import { useState } from "react";
-// import { Link } from "react-router-dom";
-// import Input from "../../components/common/Input";
-// import Button from "../../components/common/Button";
-// import GridBackground from "../../components/common/GridBackground";
-// import Logo from "../../assets/Icon.svg";
-
-// const Signup = () => {
-//   const [type, setType] = useState("individual");
-
-//   return (
-//     <div className="relative flex min-h-screen flex-col items-center justify-start pt-20 bg-white overflow-hidden">
-//       <GridBackground />
-
-//       <div className="relative flex w-full max-w-7xl flex-col items-center px-8">
-//         <div className="flex w-full max-w-90 flex-col">
-//           {/* Header Section */}
-//           <div className="flex flex-col items-center w-full">
-//             {/* Logo -> Title (mb-6) */}
-//             <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] px-2.5 shadow-[0px_4px_6px_-4px_rgba(11,120,193,0.2),0px_10px_15px_-3px_rgba(11,120,193,0.2)] mb-6">
-      
-//               <img src={Logo} alt="logo" className="w-5 h-5" />
-//             </div>
-
-//             {/* Title + Subtitle */}
-//             <div className="flex flex-col items-center text-center w-full">
-//               {/* Title -> Subtitle (mb-1) */}
-//               <h1 className="text-[24px] leading-tight font-semibold text-[#181D27] mb-1">
-//                 Create an account
-//               </h1>
-//               {/* Subtitle -> Toggle (mb-8) */}
-//               <p className="text-[14px] text-[#535862] mb-8">
-//                 Start your private cloud journey today.
-//               </p>
-//             </div>
-//           </div>
-
-//           {/* Form Section */}
-//           <div className="flex flex-col w-full">
-//             {/* Account Type Toggle (mb-6) */}
-//             <div className="flex bg-[#F9FAFB] border border-[#F2F4F7] rounded-lg p-1 mb-6">
-//               <button
-//                 onClick={() => setType("individual")}
-//                 className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
-//                   type === "individual"
-//                     ? "bg-white shadow-sm font-semibold text-[#181D27]"
-//                     : "text-[#535862] hover:text-[#181D27]"
-//                 }`}
-//               >
-//                 Individual
-//               </button>
-
-//               <button
-//                 onClick={() => setType("company")}
-//                 className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
-//                   type === "company"
-//                     ? "bg-white shadow-sm font-semibold text-[#181D27]"
-//                     : "text-[#535862] hover:text-[#181D27]"
-//                 }`}
-//               >
-//                 Company
-//               </button>
-//             </div>
-
-//             <form className="flex flex-col w-full">
-//               {/* Company Field (only shows if type is company) */}
-//               <div
-//                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
-//                   type === "company"
-//                     ? "max-h-24 opacity-100 mb-4"
-//                     : "max-h-0 opacity-0"
-//                 }`}
-//               >
-//                 <Input label="Company Name" placeholder="Amalgamated Inc." />
-//               </div>
-
-//               {/* Email -> Password (mb-4) */}
-//               <div className="mb-4">
-//                 <Input label="Email" placeholder="Enter your email" />
-//               </div>
-
-//               {/* Password -> Buttons (mb-6) */}
-//               <div className="mb-6">
-//                 <Input
-//                   label="Password"
-//                   type="password"
-//                   placeholder="••••••••"
-//                 />
-//               </div>
-
-//               {/* Action Buttons */}
-//               <div className="flex flex-col">
-//                 {/* Create Account -> Google (mb-3) */}
-//                 <div className="mb-3">
-//                   <Button text="Create Account" />
-//                 </div>
-//                 {/* Google -> Footer (mb-8) */}
-//                 <div className="mb-8">
-//                   <Button
-//                     text="Sign up with Google"
-//                     variant="google"
-//                     icon="https://cdn-icons-png.flaticon.com/512/281/281764.png"
-//                   />
-//                 </div>
-//               </div>
-//             </form>
-//           </div>
-
-//           {/* Footer Link */}
-
-//           <p className="text-center text-sm text-[#535862] mb-12">
-//             Already have an account?{" "}
-//             <Link
-//               to="/login"
-//               className="text-blue-600 font-medium hover:underline"
-//             >
-//               Log in
-//             </Link>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Signup;
-
-
-
-
-
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import GridBackground from "../../components/common/GridBackground";
 import Logo from "../../assets/Icon.svg";
-import http from '../../utils/http.js';
-import { API_BASE_URL } from "../../constants.js";
+import http from "../../utils/http.js";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { getDefaultRouteForRole } from "../../utils/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const { toast } = useToast();
 
   const [type, setType] = useState("individual");
-  const [name, setName] = useState("");           // ← added
+  const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
+    if (loading) return;
+
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (type === "company" && !companyName.trim()) {
+      toast.error("Please enter your company name.");
+      return;
+    }
+
     setLoading(true);
 
     const payload = {
-      name,                                        // ← added
-      email,
+      name: name.trim(),
+      email: email.trim(),
       password,
-      accountType: type,
-      ...(type === "company" && { companyName }),
+      accountType: type === "company" ? "COMPANY" : "INDIVIDUAL",
+      ...(type === "company" && { companyName: companyName.trim() }),
     };
 
     try {
-      const { data } = await http.post(`${API_BASE_URL}/auth/register`, payload);
+      const { data } = await http.post("/auth/register", payload);
+      const token = data?.token;
+      const role = data?.role ?? data?.user?.role;
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-
-      if (data.role === "admin") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/dashboard");
+      if (!token) {
+        throw new Error("Token not found in registration response");
       }
+
+      const session = signIn({ token, role });
+
+      if (!session.role) {
+        throw new Error("Role not found in registration response");
+      }
+
+      toast.success(data?.message || "Account created successfully.");
+      navigate(getDefaultRouteForRole(session.role), { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || "Registration failed. Please try again.");
+      toast.error(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-start pt-20 bg-white overflow-hidden">
+    <div className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden bg-white pt-20">
       <GridBackground />
 
       <div className="relative flex w-full max-w-7xl flex-col items-center px-8">
         <div className="flex w-full max-w-90 flex-col">
-
-          {/* Header Section */}
-          <div className="flex flex-col items-center w-full">
-            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] px-2.5 shadow-[0px_4px_6px_-4px_rgba(11,120,193,0.2),0px_10px_15px_-3px_rgba(11,120,193,0.2)] mb-6">
-              <img src={Logo} alt="logo" className="w-5 h-5" />
+          <div className="flex w-full flex-col items-center">
+            <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-[#0B78C1] to-[#074D82] px-2.5 shadow-[0px_4px_6px_-4px_rgba(11,120,193,0.2),0px_10px_15px_-3px_rgba(11,120,193,0.2)]">
+              <img src={Logo} alt="logo" className="h-5 w-5" />
             </div>
 
-            <div className="flex flex-col items-center text-center w-full">
-              <h1 className="text-[24px] leading-tight font-semibold text-[#181D27] mb-1">
+            <div className="flex w-full flex-col items-center text-center">
+              <h1 className="mb-1 text-[24px] font-semibold leading-tight text-[#181D27]">
                 Create an account
               </h1>
-              <p className="text-[14px] text-[#535862] mb-8">
+              <p className="mb-8 text-[14px] text-[#535862]">
                 Start your private cloud journey today.
               </p>
             </div>
           </div>
 
-          {/* Form Section */}
-          <div className="flex flex-col w-full">
-
-            {/* Account Type Toggle */}
-            <div className="flex bg-[#F9FAFB] border border-[#F2F4F7] rounded-lg p-1 mb-6">
+          <div className="flex w-full flex-col">
+            <div className="mb-6 flex rounded-lg border border-[#F2F4F7] bg-[#F9FAFB] p-1">
               <button
                 type="button"
                 onClick={() => setType("individual")}
-                className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
+                className={`flex-1 rounded-md py-1.5 text-sm transition-all duration-200 ${
                   type === "individual"
-                    ? "bg-white shadow-sm font-semibold text-[#181D27]"
+                    ? "bg-white font-semibold text-[#181D27] shadow-sm"
                     : "text-[#535862] hover:text-[#181D27]"
                 }`}
               >
@@ -224,9 +114,9 @@ const Signup = () => {
               <button
                 type="button"
                 onClick={() => setType("company")}
-                className={`flex-1 py-1.5 text-sm rounded-md transition-all duration-200 ${
+                className={`flex-1 rounded-md py-1.5 text-sm transition-all duration-200 ${
                   type === "company"
-                    ? "bg-white shadow-sm font-semibold text-[#181D27]"
+                    ? "bg-white font-semibold text-[#181D27] shadow-sm"
                     : "text-[#535862] hover:text-[#181D27]"
                 }`}
               >
@@ -234,18 +124,11 @@ const Signup = () => {
               </button>
             </div>
 
-            <form className="flex flex-col w-full" onSubmit={handleSubmit}>
-
-              {/* Error Message */}
-              {error && (
-                <p className="text-sm text-red-500 mb-4 text-center">{error}</p>
-              )}
-
-              {/* Company Name */}
+            <form className="flex w-full flex-col" onSubmit={handleSubmit}>
               <div
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
                   type === "company"
-                    ? "max-h-24 opacity-100 mb-4"
+                    ? "mb-4 max-h-24 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -257,7 +140,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Full Name */}                          {/* ← added */}
               <div className="mb-4">
                 <Input
                   label="Full Name"
@@ -269,7 +151,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="mb-4">
                 <Input
                   label="Email"
@@ -281,19 +162,17 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="mb-6">
                 <Input
                   label="Password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              {/* Buttons */}
               <div className="flex flex-col">
                 <div className="mb-3">
                   <Button
@@ -309,18 +188,18 @@ const Signup = () => {
                   />
                 </div>
               </div>
-
             </form>
           </div>
 
-          {/* Footer Link */}
-          <p className="text-center text-sm text-[#535862] mb-12">
+          <p className="mb-12 text-center text-sm text-[#535862]">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 font-medium hover:underline">
+            <Link
+              to="/login"
+              className="font-medium text-blue-600 hover:underline"
+            >
               Log in
             </Link>
           </p>
-
         </div>
       </div>
     </div>

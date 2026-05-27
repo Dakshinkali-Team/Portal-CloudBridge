@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
 import serviceRoutes from "./src/routes/serviceRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
 import { adminMiddleware } from "./src/middleware/adminMiddleware.js"; // ✅ new
@@ -20,6 +21,7 @@ app.use(express.json());
 
 // AUTH PATHWAY
 app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
 
 // ADMIN SERVICE CONFIGURATIONS PATHWAY
 // authMiddleware + adminMiddleware applied to entire admin router
