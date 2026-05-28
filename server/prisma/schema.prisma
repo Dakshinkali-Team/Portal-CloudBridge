@@ -34,12 +34,15 @@ model Service {
   name           String
   specifications String
   category       ServiceCategory
+  isActive       Boolean         @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   variants     ServiceVariant[]
   requestItems RequestItem[]
+
+  @@index([category, isActive])
 }
 
 // ===================== SERVICE VARIANT =====================
@@ -58,6 +61,8 @@ model ServiceVariant {
 
   attributes   VariantAttribute[]
   requestItems RequestItem[]
+
+  @@index([serviceId])
 }
 
 // ===================== VARIANT ATTRIBUTE =====================
@@ -74,6 +79,8 @@ model VariantAttribute {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([serviceVariantId])
 }
 
 // ===================== SERVICE REQUEST =====================
@@ -86,12 +93,19 @@ model ServiceRequest {
   customer User  @relation("CustomerRequests", fields: [customerId], references: [id], onDelete: Cascade)
   reviewer User? @relation("ReviewerRequests", fields: [reviewerId], references: [id])
 
-  status String
+  status          String    @default("PENDING")
+  notes           String?
+  responseMessage String?
+  estimatedDate   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   items RequestItem[]
+
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+  @@index([reviewerId])
 }
 
 // ===================== REQUEST ITEM =====================
@@ -107,9 +121,14 @@ model RequestItem {
   serviceVariant ServiceVariant @relation(fields: [serviceVariantId], references: [id])
 
   unitPriceSnap Float
+  quantity      Int   @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([serviceId])
+  @@index([serviceVariantId])
 }
 
 // ===================== ENUMS =====================

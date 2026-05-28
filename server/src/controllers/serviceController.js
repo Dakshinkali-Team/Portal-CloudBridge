@@ -49,6 +49,26 @@ const parseNumberField = (value, fieldName) => {
   return parsed;
 };
 
+const parseBooleanField = (value, fieldName) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalizedValue = value.trim().toLowerCase();
+
+    if (normalizedValue === "true") {
+      return true;
+    }
+
+    if (normalizedValue === "false") {
+      return false;
+    }
+  }
+
+  throw createHttpError(400, `${fieldName} must be a boolean value`);
+};
+
 const normalizeCategory = (category) => {
   const normalized = asTrimmedString(category).toUpperCase();
 
@@ -223,6 +243,10 @@ const buildServiceData = (body, { partial = false } = {}) => {
 
   if (!partial && !data.specifications) {
     throw createHttpError(400, "specifications is required");
+  }
+
+  if (body.isActive !== undefined) {
+    data.isActive = parseBooleanField(body.isActive, "isActive");
   }
 
   return data;
