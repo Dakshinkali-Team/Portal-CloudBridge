@@ -101,7 +101,7 @@ const PriceCalculatorPage = () => {
 
   return (
     /* md:pt-4 banayera mathi bata ali space badhayeko chhu balance ko lagi */
-    <div className="px-4 py-2 md:px-10 md:pt-4 md:pb-10 w-full min-h-screen bg-[#F8FAFC] flex justify-center font-sans">
+    <div className="w-full min-h-screen bg-[#F8FAFC] font-sans">
       <div className="w-full max-w-[1200px]">
         <header className="mb-4">
           <h1 className="text-[28px] md:text-[32px] font-bold text-[#0F172B] tracking-tight">Price Calculator</h1>

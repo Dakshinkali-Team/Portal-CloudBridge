@@ -5,7 +5,7 @@ export default function PriceCalculator() {
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto p-8">
         <PriceCalculatorPage />
       </main>
     </div>

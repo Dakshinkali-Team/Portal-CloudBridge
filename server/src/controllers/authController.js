@@ -6,7 +6,7 @@ import { ROLES } from "../constants/roles.js";
 // REGISTER
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, accountType } = req.body;
+    const { name, email, password, accountType, companyName } = req.body;
     const normalizedAccountType =
       String(accountType).trim().toUpperCase() === "COMPANY"
         ? "COMPANY"
@@ -41,6 +41,21 @@ export const registerUser = async (req, res) => {
         accountType: normalizedAccountType,
       },
     });
+
+    // If company account and company name provided, create profile record
+    if (normalizedAccountType === "COMPANY" && companyName && companyName.trim()) {
+      try {
+        await prisma.profile.create({
+          data: {
+            userId: user.id,
+            fullName: name?.trim() || null,
+            company: companyName.trim(),
+          },
+        });
+      } catch (profileErr) {
+        console.warn("Failed to create profile for company user:", profileErr.message);
+      }
+    }
 
     // GENERATE TOKEN
     const token = jwt.sign(
