@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Minus, Calculator, Info } from 'lucide-react';
+import http from '../../utils/http.js';
 
 const InstanceRow = ({ label, price, value, onAdd, onSub }) => (
   <div className="flex items-center justify-between py-4 border-b border-[#F1F5F9] last:border-0">
@@ -22,15 +23,80 @@ const InstanceRow = ({ label, price, value, onAdd, onSub }) => (
 );
 
 const PriceCalculatorPage = () => {
-  const [instances, setInstances] = useState({ small: 3, medium: 2, large: 2 });
-  const [databases, setDatabases] = useState({ postgres: 0, mysql: 0, redis: 0 });
-  const [storageGB, setStorageGB] = useState(1500);
-  const [bandwidthGB, setBandwidthGB] = useState(1700);
+  const [variants, setVariants] = useState([]); // flattened variants
+  const [variantCounts, setVariantCounts] = useState({}); // { variantId: qty }
+  const [storageGB, setStorageGB] = useState(0);
+  const [bandwidthGB, setBandwidthGB] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const computeTotal = (instances.small * 50) + (instances.medium * 100) + (instances.large * 200);
-  const dbTotal = (databases.postgres * 80) + (databases.mysql * 75) + (databases.redis * 60);
-  const storageCost = (storageGB * 0.10); 
-  const bandwidthCost = (bandwidthGB * 0.05);
+  useEffect(() => {
+    let mounted = true;
+    const fetchServices = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await http.get('/customer/services');
+        const payload = Array.isArray(res.data?.data) ? res.data.data : [];
+
+        if (!mounted) return;
+
+        // Flatten variants
+        const v = [];
+        payload.forEach((svc) => {
+          const svcVariants = Array.isArray(svc.variants) ? svc.variants : [];
+          svcVariants.forEach((variant) => {
+            v.push({
+              id: variant.id,
+              serviceId: svc.id,
+              serviceName: svc.name,
+              category: svc.category,
+              basePrice: variant.basePrice ?? 0,
+              billingInterval: variant.billingInterval ?? "MONTHLY",
+              attributes: Array.isArray(variant.attributes) ? variant.attributes : [],
+              currency: variant.currency ?? "USD",
+            });
+          });
+        });
+
+        setVariants(v);
+
+        // Initialize counts to 0 for all variants (or keep previous)
+        setVariantCounts((prev) => {
+          const next = { ...prev };
+          v.forEach((vt) => {
+            if (next[vt.id] == null) next[vt.id] = 0;
+          });
+          return next;
+        });
+      } catch (err) {
+        setError(err?.response?.data?.error || err.message || 'Failed to load services');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const computeTotal = variants
+    .filter((v) => v.category === 'COMPUTE')
+    .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
+
+  const dbTotal = variants
+    .filter((v) => v.category === 'DATABASE')
+    .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
+
+  // Determine storage unit price from first storage variant if available
+  const storageVariant = variants.find((v) => v.category === 'STORAGE');
+  const storageUnitPrice = storageVariant ? Number(storageVariant.basePrice || 0) : 0.10;
+  const storageCost = storageGB * storageUnitPrice;
+  
+
+  const bandwidthCost = bandwidthGB * 0.05;
   const grandTotal = computeTotal + storageCost + bandwidthCost + dbTotal;
 
   return (
@@ -42,6 +108,12 @@ const PriceCalculatorPage = () => {
           <p className="text-[14px] md:text-[15px] text-slate-500 mt-2">Estimate your monthly costs with transparent pricing</p>
         </header>
 
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 mt-6 gap-6 items-start">
           <div className="col-span-1 lg:col-span-8 space-y-6 order-1">
             
@@ -49,9 +121,24 @@ const PriceCalculatorPage = () => {
             <section className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
               <h3 className="text-[18px] font-bold text-[#0F172B] mb-2">Compute Instances</h3>
               <div className="space-y-0">
-                <InstanceRow label="Small Instance" price="50" value={instances.small} onAdd={() => setInstances({...instances, small: instances.small + 1})} onSub={() => setInstances({...instances, small: Math.max(0, instances.small - 1)})} />
-                <InstanceRow label="Medium Instance" price="100" value={instances.medium} onAdd={() => setInstances({...instances, medium: instances.medium + 1})} onSub={() => setInstances({...instances, medium: Math.max(0, instances.medium - 1)})} />
-                <InstanceRow label="Large Instance" price="200" value={instances.large} onAdd={() => setInstances({...instances, large: instances.large + 1})} onSub={() => setInstances({...instances, large: Math.max(0, instances.large - 1)})} />
+                {loading ? (
+                  <div className="p-4 text-sm text-slate-500">Loading compute variants...</div>
+                ) : (
+                  variants.filter((v) => v.category === 'COMPUTE').length === 0 ? (
+                    <div className="p-4 text-sm text-slate-500">No compute instances available.</div>
+                  ) : (
+                    variants.filter((v) => v.category === 'COMPUTE').map((v) => (
+                      <InstanceRow
+                        key={v.id}
+                        label={`${v.serviceName} (${v.billingInterval.toLowerCase()})`}
+                        price={v.basePrice}
+                        value={variantCounts[v.id] || 0}
+                        onAdd={() => setVariantCounts((p) => ({ ...p, [v.id]: (p[v.id] || 0) + 1 }))}
+                        onSub={() => setVariantCounts((p) => ({ ...p, [v.id]: Math.max(0, (p[v.id] || 0) - 1) }))}
+                      />
+                    ))
+                  )
+                )}
               </div>
             </section>
 
@@ -101,9 +188,24 @@ const PriceCalculatorPage = () => {
             <section className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
               <h3 className="text-[18px] font-bold text-[#0F172B] mb-2">Database Services</h3>
               <div className="space-y-0">
-                <InstanceRow label="Postgres" price="80" value={databases.postgres} onAdd={() => setDatabases({...databases, postgres: databases.postgres + 1})} onSub={() => setDatabases({...databases, postgres: Math.max(0, databases.postgres - 1)})} />
-                <InstanceRow label="Mysql" price="75" value={databases.mysql} onAdd={() => setDatabases({...databases, mysql: databases.mysql + 1})} onSub={() => setDatabases({...databases, mysql: Math.max(0, databases.mysql - 1)})} />
-                <InstanceRow label="Redis" price="60" value={databases.redis} onAdd={() => setDatabases({...databases, redis: databases.redis + 1})} onSub={() => setDatabases({...databases, redis: Math.max(0, databases.redis - 1)})} />
+                {loading ? (
+                  <div className="p-4 text-sm text-slate-500">Loading database variants...</div>
+                ) : (
+                  variants.filter((v) => v.category === 'DATABASE').length === 0 ? (
+                    <div className="p-4 text-sm text-slate-500">No database variants available.</div>
+                  ) : (
+                    variants.filter((v) => v.category === 'DATABASE').map((v) => (
+                      <InstanceRow
+                        key={v.id}
+                        label={`${v.serviceName} (${v.billingInterval.toLowerCase()})`}
+                        price={v.basePrice}
+                        value={variantCounts[v.id] || 0}
+                        onAdd={() => setVariantCounts((p) => ({ ...p, [v.id]: (p[v.id] || 0) + 1 }))}
+                        onSub={() => setVariantCounts((p) => ({ ...p, [v.id]: Math.max(0, (p[v.id] || 0) - 1) }))}
+                      />
+                    ))
+                  )
+                )}
               </div>
             </section>
           </div>
@@ -140,9 +242,9 @@ const PriceCalculatorPage = () => {
                   ${grandTotal.toFixed(2)}
                 </span>
               </div>
-              <button className="w-full py-3.5 bg-[#0077b6] text-white text-[15px] font-bold rounded-xl hover:bg-[#005f91] transition-all">
+              {/* <button className="w-full py-3.5 bg-[#0077b6] text-white text-[15px] font-bold rounded-xl hover:bg-[#005f91] transition-all">
                 Request Quote
-              </button>
+              </button> */}
             </div>
             <div className="bg-[#F0F9FF] p-5 rounded-xl border border-[#E0F2FE] flex gap-3">
               <Info size={18} className="text-[#0077b6] shrink-0" />

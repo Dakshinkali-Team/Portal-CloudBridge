@@ -180,13 +180,13 @@ const Signup = () => {
                     disabled={loading}
                   />
                 </div>
-                <div className="mb-8">
+                {/* <div className="mb-8">
                   <Button
                     text="Sign up with Google"
                     variant="google"
                     icon="https://cdn-icons-png.flaticon.com/512/281/281764.png"
                   />
-                </div>
+                </div> */}
               </div>
             </form>
           </div>

@@ -88,6 +88,9 @@ const serializeRequestItem = (item) => ({
 const serializeServiceRequest = (serviceRequest) => {
   const items = serviceRequest.items.map(serializeRequestItem);
 
+  console.log(items);
+  
+
   return {
     id: serviceRequest.id,
     status: serviceRequest.status,
@@ -257,9 +260,14 @@ export const getCustomerServiceRequests = async ({
   customerId,
   page,
   limit,
+  status,
 }) => {
   const skip = (page - 1) * limit;
   const where = { customerId };
+
+  if (status) {
+    where.status = status?.toUpperCase();
+  }
 
   const [serviceRequests, total] = await prisma.$transaction([
     prisma.serviceRequest.findMany({

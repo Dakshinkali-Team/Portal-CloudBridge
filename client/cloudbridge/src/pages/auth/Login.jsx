@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 import Input from "../../components/common/Input.jsx";
@@ -132,13 +132,13 @@ const Login = () => {
                 <Button text={loading ? "Signing in..." : "Sign in"} />
               </div>
 
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <Button
                   text="Sign in with Google"
                   variant="google"
                   icon="https://cdn-icons-png.flaticon.com/512/281/281764.png"
                 />
-              </div>
+              </div> */}
             </div>
           </form>
 

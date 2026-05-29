@@ -33,10 +33,13 @@ export const createCustomerRequest = asyncHandler(async (req, res) => {
 
 export const getMyServiceRequests = asyncHandler(async (req, res) => {
   const query = req.validated?.query ?? req.query;
+  const statusQuery = req.query;
+  
   const result = await getCustomerServiceRequests({
     customerId: req.user.id,
     page: query.page,
     limit: query.limit,
+    ...(statusQuery.status === "ALL" ? {} : { status: statusQuery.status }),
   });
 
   res.status(200).json({
