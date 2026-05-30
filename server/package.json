@@ -17,7 +17,8 @@
     "express",
     "prisma",
     "postgresql",
-    "supabase"
+    "supabase",
+    "neondb"
   ],
   "author": "",
   "license": "ISC",
