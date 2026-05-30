@@ -43,7 +43,8 @@ const Signup = () => {
       name: name.trim(),
       email: email.trim(),
       password,
-      accountType: type === "company" ? "COMPANY" : "INDIVIDUAL",
+      accountType: type === "company" ? "COMPANY" : "INDIVIDUAL", 
+      role: "CUSTOMER",
       ...(type === "company" && { companyName: companyName.trim() }),
     };
 

@@ -1,69 +1,69 @@
-import { useMemo } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "../constants";
+import { useMemo } from "react"; //import the useMemo hook from React to memoize the Axios instance, ensuring that the same instance is reused across component renders for performance optimization and consistent behavior
+import axios from "axios";  //import the Axios library for making HTTP requests, which provides a promise-based API for interacting with RESTful endpoints and handling responses and errors in a consistent way across the application
+import { API_BASE_URL } from "../constants";    //import the base URL for the API from a constants file, allowing for centralized configuration of the API endpoint and easy updates if the endpoint changes, while keeping the base URL consistent across all API calls made using this custom hook
 
-axios.defaults.baseURL = `${API_BASE_URL}`;
+axios.defaults.baseURL = `${API_BASE_URL}`;           //set the default base URL for all Axios requests to the API_BASE_URL, ensuring that all requests made using Axios will be directed to the correct API endpoint without needing to specify the full URL in each request, which simplifies the code and reduces the risk of errors in specifying endpoints
 
-const getAccessToken = () => localStorage.getItem("token");
-const getRefreshToken = () => localStorage.getItem("refreshToken");
-const setAccessToken = (token) => localStorage.setItem("token", token);
-const clearTokens = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
+const getAccessToken = () => localStorage.getItem("token");      //get the access token from local storage, which is used for authenticating API requests; this function allows the Axios instance to retrieve the current access token whenever it needs to include it in the Authorization header of outgoing requests, ensuring that the most up-to-date token is used for authentication
+const getRefreshToken = () => localStorage.getItem("refreshToken");       //get the refresh token from local storage, which is used for obtaining a new access token when the current access token expires; this function allows the Axios instance to retrieve the refresh token when it needs to attempt to refresh the access token after receiving a 401 Unauthorized response, enabling seamless token management and improved user experience by automatically handling token expiration and renewal without requiring user intervention
+const setAccessToken = (token) => localStorage.setItem("token", token);       //set a new access token in local storage, which is used for authenticating API requests; this function is called after successfully refreshing the access token to update the stored token with the new value, ensuring that subsequent API requests will use the new access token for authentication and maintain a valid session for the user
+const clearTokens = () => {                   //clear both the access token and refresh token from local storage, which is typically done when the user logs out or when token refresh fails, ensuring that any stored tokens are removed to prevent unauthorized access and to require re-authentication for future API requests, thereby enhancing security by ensuring that invalid or expired tokens are not retained in the client's storage
+  localStorage.removeItem("token");             //remove the access token from local storage, effectively logging the user out by preventing further authenticated API requests until a new token is obtained through login
+  localStorage.removeItem("refreshToken");      //remove the refresh token from local storage, ensuring that the client cannot attempt to refresh the access token after logging out or when token refresh fails, which helps to prevent unauthorized access and ensures that the user must re-authenticate to obtain new tokens for future API interactions
 };
 
-const refreshAccessToken = async () => {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) throw new Error("No refresh token available");
-  const response = await axios.post("auth/refresh", { refreshToken });
-  const { accessToken } = response.data;
-  setAccessToken(accessToken);
-  return accessToken;
+const refreshAccessToken = async () => {        //function to refresh the access token using the refresh token, which is called when an API request fails with a 401 Unauthorized error, allowing the application to attempt to obtain a new access token without requiring the user to log in again, thereby improving user experience by handling token expiration seamlessly in the background
+  const refreshToken = getRefreshToken();       //get the current refresh token from local storage, which is necessary for making the token refresh request to the API; if no refresh token is available, an error is thrown to indicate that the token refresh process cannot proceed, which typically means that the user needs to log in again to obtain new tokens
+  if (!refreshToken) throw new Error("No refresh token available");       //if there is no refresh token available, throw an error to indicate that the token refresh process cannot proceed, which typically means that the user needs to log in again to obtain new tokens; this check prevents attempts to refresh the access token without a valid refresh token, which would result in a failed API request and allows for proper error handling in the calling code
+  const response = await axios.post("auth/refresh", { refreshToken });  //make a POST request to the "auth/refresh" endpoint of the API, sending the refresh token in the request body; if the refresh token is valid and the request is successful, the API will respond with a new access token, which is then extracted from the response data and returned by this function; if the refresh token is invalid or expired, the API will respond with an error, which will be caught and handled by the calling code to clear tokens and require re-authentication as needed
+  const { accessToken } = response.data;        //extract the new access token from the response data, which is expected to be returned by the API in a successful token refresh response; this new access token will be used for subsequent authenticated API requests, allowing the application to maintain a valid session for the user without requiring them to log in again
+  setAccessToken(accessToken);                    //store the new access token in local storage using the setAccessToken function, ensuring that future API requests will use the updated token for authentication; this step is crucial for maintaining a seamless user experience by allowing the application to continue functioning with a valid access token after it has been refreshed, without requiring user intervention
+  return accessToken;                   //return the new access token to the caller, which can be used to update the Authorization header of the original API request that triggered the token refresh process, allowing that request to be retried with the new token for successful authentication and completion                 
 };
 
-export const useAxios = () => {
-  return useMemo(() => {
-    const instance = axios.create({
-      baseURL: API_BASE_URL,
-      headers: {
-        "Content-Type": "application/json",
+export const useAxios = () => {               //custom hook to create and return an Axios instance with interceptors for token refresh and error handling
+  return useMemo(() => {                      //use the useMemo hook to memoize the Axios instance, ensuring that the same instance is reused across component renders for performance optimization and consistent behavior; the Axios instance is configured with interceptors to automatically include the access token in request headers and to handle token refresh when a 401 Unauthorized response is received, allowing for seamless authentication management in API interactions
+    const instance = axios.create({           //create a new Axios instance with default configuration, including the base URL for the API and default headers for JSON content type; this instance will be used for all API requests made through this custom hook, allowing for centralized configuration and consistent behavior across the application
+      baseURL: API_BASE_URL,                  //the base URL for the API, which is obtained from the API_BASE_URL constant defined in the constants.js file
+      headers: {                              //default headers for all requests made using this Axios instance, specifying that the content type of the request body is JSON, which is important for ensuring that the API correctly interprets the data being sent in POST, PUT, and PATCH requests; this default header can be overridden on a per-request basis if needed, but it provides a sensible default for most API interactions in the application
+        "Content-Type": "application/json",   //set the default content type for request bodies to JSON, which is a common format for API requests and ensures that the server can correctly parse the incoming data; this header is included in all requests made with this Axios instance unless explicitly overridden, providing a consistent configuration for API interactions throughout the application
       },
     });
 
-    instance.interceptors.request.use(
-      (config) => {
-        const token = getAccessToken();
-        if (token) config.headers["Authorization"] = `Bearer ${token}`;
-        return config;
+    instance.interceptors.request.use(          //add an interceptor to the Axios instance to automatically include the access token in request headers for authenticated requests
+      (config) => {                               //intercept outgoing requests and modify the request configuration to include the Authorization header with the Bearer token if an access token is available; this ensures that all API requests made using this Axios instance will include the necessary authentication credentials without requiring manual inclusion of the token in each request, improving developer experience and reducing the risk of errors in forgetting to include the token
+        const token = getAccessToken();           //get the access token from local storage using the getAccessToken function;       //if an access token is available, add it to the Authorization header of the request in the format "Bearer <token>", which is the standard format for bearer token authentication in HTTP requests; this allows the server to authenticate the request based on the provided token and grant access to protected resources as appropriate
+        if (token) config.headers["Authorization"] = `Bearer ${token}`;   //if there is an access token available, set the Authorization header of the request to include the token in the format "Bearer <token>", which is the standard format for bearer token authentication in HTTP requests; this allows the server to authenticate the request based on the provided token and grant access to protected resources as appropriate; if no token is available, the request will be sent without an Authorization header, which may result in a 401 Unauthorized response if the endpoint requires authentication
+        return config;                                //return the modified request configuration, which will be used to send the API request to the server
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error)              //if there is an error in the request configuration process, reject the promise with the error, allowing it to be caught and handled by the calling code; this ensures that any issues in setting up the request are properly propagated and can be addressed in the appropriate context
     );
 
-    instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        if (
+    instance.interceptors.response.use(         //add an interceptor to the Axios instance to handle responses and errors, including automatic token refresh on 401 Unauthorized responses
+      (response) => response,                       //for successful responses, simply return the response object, allowing the calling code to access the response data and other properties as needed; this interceptor does not modify successful responses, but it provides a centralized place to handle any response transformations or logging if desired in the future  
+      async (error) => {                      //for error responses, check if the error is a 401 Unauthorized response, which indicates that the access token may have expired; if it is a 401 error and the request has not already been retried, attempt to refresh the access token using the refreshAccessToken function; if the token refresh is successful, update the original request with the new token and retry it; if the token refresh fails or if the error is not a 401, reject the promise with the error to allow for proper error handling in the calling code
+        const originalRequest = error.config;   //get the original request configuration from the error object, which will be used to retry the request if the token refresh is successful; this allows the application to seamlessly retry the failed request with a new access token without requiring user intervention, improving user experience by handling token expiration in the background
+        if (                                          //if the error response status is not 401, or if the request has already been retried, or if the request URL includes "auth/refresh" (to prevent infinite loops of token refresh attempts), reject the promise with the error to allow for proper error handling in the calling code; this ensures that only relevant errors trigger the token refresh process and that any issues in refreshing the token are properly propagated for handling
           error.response?.status !== 401 ||
           originalRequest._retry ||
-          originalRequest.url?.includes("auth/refresh")
+          originalRequest.url?.includes("auth/refresh")     //check if the error response status is 401, and if the request has not already been retried, and if the request URL does not include "auth/refresh"  
         ) {
-          return Promise.reject(error);
+          return Promise.reject(error);                 //if the error is not a 401, or if the request has already been retried, or if the request is for the token refresh endpoint itself, reject the promise with the error to allow for proper error handling in the calling code; this prevents unnecessary token refresh attempts and ensures that errors are handled in the appropriate context without causing infinite loops of retries
         }
-        originalRequest._retry = true;
-        try {
-          const newToken = await refreshAccessToken();
-          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-          return instance(originalRequest);
-        } catch (refreshError) {
-          clearTokens();
-          return Promise.reject(refreshError);
+        originalRequest._retry = true;            //mark the original request as having been retried to prevent multiple attempts to refresh the token for the same request, which could lead to infinite loops if the token refresh continues to fail; this flag is checked in the error handling logic to ensure that only one token refresh attempt is made per failed request
+        try {                                     //attempt to refresh the access token using the refreshAccessToken function; if the refresh is successful, update the Authorization header of the original request with the new token and retry the request using the Axios instance; this allows for seamless handling of token expiration by automatically obtaining a new token and retrying the failed request without requiring user intervention, improving user experience and maintaining a valid session for the user
+          const newToken = await refreshAccessToken();  //call the refreshAccessToken function to obtain a new access token using the refresh token; if the refresh is successful, the new access token will be returned and can be used to update the original request for retrying
+          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;  //update the Authorization header of the original request to include the new access token in the format "Bearer <token>", which is necessary for authenticating the retried request with the new token; this ensures that the retried request will be properly authenticated and can succeed if the new token is valid
+          return instance(originalRequest);     //retry the original request using the Axios instance with the updated Authorization header; this allows the application to seamlessly retry the failed request with a new access token without requiring user intervention, improving user experience by handling token expiration in the background; if the retried request is successful, its response will be returned to the calling code; if it fails, the error will be caught and handled by the calling code as well 
+        } catch (refreshError) {                  //if there is an error in the token refresh process, such as an invalid or expired refresh token, clear the stored tokens using the clearTokens function to log the user out and reject the promise with the refresh error to allow for proper error handling in the calling code; this ensures that if the token refresh fails, the user is logged out to prevent unauthorized access and is required to log in again to obtain new tokens, while also allowing the calling code to handle the error appropriately (e.g., by showing a notification or redirecting to a login page)
+          clearTokens();                        //clear the stored access token and refresh token from local storage to log the user out, ensuring that any invalid or expired tokens are removed and that the user must re-authenticate to obtain new tokens for future API interactions, which enhances security by preventing unauthorized access with invalid tokens
+          return Promise.reject(refreshError);    //reject the promise with the error that occurred during the token refresh process, allowing it to be caught and handled by the calling code; this ensures that any issues in refreshing the token are properly propagated for handling, such as showing an error message to the user or redirecting to a login page to prompt re-authentication
         }
       }
     );
 
-    return instance;
+    return instance;              //return the configured Axios instance with interceptors for use in API requests throughout the application, allowing for consistent handling of authentication and errors across all API interactions made using this custom hook; by memoizing the instance with useMemo, we ensure that the same instance is reused across component renders, improving performance and maintaining consistent behavior in API requests and responses
   }, []);
 };
 
-export default useAxios;
+export default useAxios;      //export the useAxios hook as the default export of this module, allowing it to be easily imported and used in other parts of the application for making authenticated API requests with automatic token refresh handling, improving developer experience and ensuring consistent API interactions across the application by centralizing the Axios configuration and token management logic in this custom hook
