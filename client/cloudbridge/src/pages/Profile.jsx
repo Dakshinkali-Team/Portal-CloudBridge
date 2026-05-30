@@ -114,7 +114,7 @@ const ProfilePage = ({ nested = false }) => {
             </div>
           </section>
 
-          {/* Buttons */}
+          {/* Buttons
           <div className="flex items-center gap-3 pt-2">
             <button className="flex-1 py-3 bg-[#0077b6] text-white font-bold rounded-lg shadow-md hover:bg-[#005f91] transition-all text-sm">
               Save Changes
@@ -123,7 +123,7 @@ const ProfilePage = ({ nested = false }) => {
             <button className="px-8 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-50 transition-all text-sm">
               Cancel
             </button>
-          </div>
+          </div> */}
 
         </div>
       </main>
