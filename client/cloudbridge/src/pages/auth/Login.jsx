@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { getDefaultRouteForRole } from "../../utils/auth";
 import useAxios from "../../hooks/useAxios.js";
+import { validateLoginCredentials } from "../../utils/validation";
 
 const Login = () => {
   const axiosInstance = useAxios();
@@ -21,14 +22,24 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     if (loading) return;
 
-    if (!email.trim() || !password.trim()) {
-      toast.error("Please fill in both email and password.");
+    // Clear previous errors
+    setErrors({});
+
+    // FRONTEND VALIDATION
+    const validation = validateLoginCredentials({
+      email,
+      password,
+    });
+
+    if (!validation.isValid) {
+      setErrors(validation.errors);
       return;
     }
 
@@ -97,7 +108,13 @@ const Login = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors({ ...errors, email: "" });
+                  }
+                }}
+                error={errors.email}
                 required
               />
             </div>
@@ -108,7 +125,13 @@ const Login = () => {
                 type="password"
                 placeholder="********"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) {
+                    setErrors({ ...errors, password: "" });
+                  }
+                }}
+                error={errors.password}
                 required
               />
             </div>

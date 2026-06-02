@@ -9,6 +9,7 @@ import http from "../../utils/http.js";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { getDefaultRouteForRole } from "../../utils/auth";
+import { validateRegistrationData } from "../../utils/validation";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -21,19 +22,27 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (loading) return;
 
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
+    // Clear previous errors
+    setErrors({});
 
-    if (type === "company" && !companyName.trim()) {
-      toast.error("Please enter your company name.");
+    // FRONTEND VALIDATION
+    const validation = validateRegistrationData({
+      name,
+      email,
+      password,
+      companyName,
+      accountType: type,
+    });
+
+    if (!validation.isValid) {
+      setErrors(validation.errors);
       return;
     }
 
@@ -102,7 +111,12 @@ const Signup = () => {
             <div className="mb-6 flex rounded-lg border border-[#F2F4F7] bg-[#F9FAFB] p-1">
               <button
                 type="button"
-                onClick={() => setType("individual")}
+                onClick={() => {
+                  setType("individual");
+                  if (errors.companyName) {
+                    setErrors({ ...errors, companyName: "" });
+                  }
+                }}
                 className={`flex-1 rounded-md py-1.5 text-sm transition-all duration-200 ${
                   type === "individual"
                     ? "bg-white font-semibold text-[#181D27] shadow-sm"
@@ -137,7 +151,13 @@ const Signup = () => {
                   label="Company Name"
                   placeholder="Amalgamated Inc."
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    if (errors.companyName) {
+                      setErrors({ ...errors, companyName: "" });
+                    }
+                  }}
+                  error={type === "company" ? errors.companyName : ""}
                 />
               </div>
 
@@ -147,7 +167,13 @@ const Signup = () => {
                   type="text"
                   placeholder="Enter your full name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name) {
+                      setErrors({ ...errors, name: "" });
+                    }
+                  }}
+                  error={errors.name}
                   required
                 />
               </div>
@@ -158,7 +184,13 @@ const Signup = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) {
+                      setErrors({ ...errors, email: "" });
+                    }
+                  }}
+                  error={errors.email}
                   required
                 />
               </div>
@@ -169,7 +201,13 @@ const Signup = () => {
                   type="password"
                   placeholder="********"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) {
+                      setErrors({ ...errors, password: "" });
+                    }
+                  }}
+                  error={errors.password}
                   required
                 />
               </div>
