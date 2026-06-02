@@ -20,9 +20,32 @@ export const respondToCustomerServiceRequest = asyncHandler(
     const params = req.validated?.params ?? req.params;
     const body = req.validated?.body ?? req.body;
 
+    // Extract and validate reviewer id from authenticated user token
+    const rawReviewerId = req.user?.id;
+    let reviewerId = null;
+
+    if (typeof rawReviewerId === "number") {
+      reviewerId = rawReviewerId;
+    } else if (typeof rawReviewerId === "string" && /^\d+$/.test(rawReviewerId)) {
+      reviewerId = Number(rawReviewerId);
+    }
+
+    if (!reviewerId) {
+      console.error("Invalid or missing reviewerId on authenticated user", {
+        rawReviewerId,
+        path: req.originalUrl,
+        method: req.method,
+      });
+
+      return res.status(401).json({
+        success: false,
+        error: "Invalid or missing authenticated user id",
+      });
+    }
+
     const updatedRequest = await respondToServiceRequest({
       requestId: params.id,
-      reviewerId: req.user.id,
+      reviewerId,
       status: body.status,
       responseMessage: body.responseMessage,
       estimatedDate: body.estimatedDate,

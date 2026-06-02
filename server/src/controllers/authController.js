@@ -2,28 +2,44 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma.js"; 
 import { ROLES } from "../constants/roles.js";
+import { loginSchema, registerSchema } from "../validators/authValidators.js";
 
 // REGISTER
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, accountType, companyName, role } = req.body;
+
+    // VALIDATE INPUT
+    try {
+      registerSchema.parse({
+        name,
+        email,
+        password,
+        accountType,
+        companyName,
+        role,
+      });
+    } catch (validationError) {
+      const errors = validationError.errors[0];
+      return res.status(400).json({
+        success: false,
+        message: errors.message,
+      });
+    }
+
     const normalizedAccountType =
       String(accountType).trim().toUpperCase() === "COMPANY"
         ? "COMPANY"
         : "INDIVIDUAL";
 
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        message: "Name, email, and password are required",
-      });
-    }
     // CHECK EXISTING USER
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.trim() },
     });
 
     if (existingUser) {
       return res.status(400).json({
+        success: false,
         message: "User already exists",
       });
     }
@@ -34,8 +50,8 @@ export const registerUser = async (req, res) => {
     // CREATE USER
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim(),
         password: hashedPassword,
         role,
         accountType: normalizedAccountType,
@@ -65,6 +81,7 @@ export const registerUser = async (req, res) => {
     );
 
     res.status(201).json({
+      success: true,
       message: "User registered successfully",
       token,
       role: user.role,
@@ -78,6 +95,7 @@ export const registerUser = async (req, res) => {
   } catch (err) {
     console.log("REGISTER ERROR:", err.message);
     res.status(500).json({
+      success: false,
       error: err.message,
     });
   }
@@ -88,13 +106,28 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // VALIDATE INPUT
+    try {
+      loginSchema.parse({
+        email,
+        password,
+      });
+    } catch (validationError) {
+      const errors = validationError.errors[0];
+      return res.status(400).json({
+        success: false,
+        message: errors.message,
+      });
+    }
+
     // FIND USER
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.trim() },
     });
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
@@ -104,6 +137,7 @@ export const loginUser = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
+        success: false,
         message: "Invalid credentials",
       });
     }
@@ -121,6 +155,7 @@ export const loginUser = async (req, res) => {
     );
 
     res.status(200).json({
+      success: true,
       message: "Login successful",
       token,
       role: user.role,
@@ -133,6 +168,7 @@ export const loginUser = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
+      success: false,
       error: err.message,
     });
   }

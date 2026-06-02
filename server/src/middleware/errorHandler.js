@@ -18,6 +18,9 @@ export const errorHandler = (error, req, res, next) => {
   }
 
   if (error instanceof ZodError) {
+    // Log the validation issues for debugging
+    console.error("Validation error:", formatZodIssues(error.issues));
+
     return res.status(400).json({
       success: false,
       error: "Validation failed",
