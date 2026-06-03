@@ -22,12 +22,64 @@ const InstanceRow = ({ label, price, value, onAdd, onSub }) => (
   </div>
 );
 
+const SERVICE_CATEGORIES = {
+  STORAGE: 'Storage',
+  NETWORK: 'Bandwidth',
+};
+
+const getSliderConfig = (category) => {
+  if (category === 'NETWORK') {
+    return { max: 10000, step: 100 };
+  }
+
+  return { max: 5000, step: 50 };
+};
+
+const PricingServiceCard = ({ service, value, onChange }) => {
+  const unitPrice = Number(service.basePrice ?? 0);
+  const selectedValue = Number(value ?? 0);
+  const total = selectedValue * unitPrice;
+  const { max, step } = getSliderConfig(service.category);
+  const progress = max > 0 ? Math.min((selectedValue / max) * 100, 100) : 0;
+
+  return (
+    <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+      <div className="flex justify-between text-[16px] font-medium text-[#0F172B] mb-3 font-work-sans">
+        <span>{service.name} ({service.unit})</span>
+        <span className="text-slate-400 text-[13px] font-normal">
+          ${unitPrice.toFixed(2)}/{service.unit}
+        </span>
+      </div>
+      <div className="relative w-full h-2 bg-[#F1F5F9] rounded-full">
+        <div
+          className="absolute top-0 left-0 h-full bg-[#0077b6] rounded-full"
+          style={{ width: `${progress}%` }}
+        ></div>
+        <input
+          type="range"
+          min="0"
+          max={max}
+          step={step}
+          value={selectedValue}
+          onChange={(event) => onChange(Number(event.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+      </div>
+      <div className="flex justify-between mt-4 text-[13px] font-medium font-work-sans">
+        <span className="text-slate-400">{selectedValue} {service.unit}</span>
+        <span className="text-[#0077b6] font-bold">${total.toFixed(2)}/mo</span>
+      </div>
+    </div>
+  );
+};
+
 const PriceCalculatorPage = () => {
   const [variants, setVariants] = useState([]); // flattened variants
   const [variantCounts, setVariantCounts] = useState({}); // { variantId: qty }
-  const [storageGB, setStorageGB] = useState(0);
-  const [bandwidthGB, setBandwidthGB] = useState(0);
+  const [serviceCatalog, setServiceCatalog] = useState([]);
+  const [serviceValues, setServiceValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -82,6 +134,50 @@ const PriceCalculatorPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchServiceCatalog = async () => {
+      setCatalogLoading(true);
+
+      try {
+        const res = await http.get('/services/catalog');
+        const payload = Array.isArray(res.data?.data) ? res.data.data : [];
+
+        if (!mounted) {
+          return;
+        }
+
+        setServiceCatalog(payload);
+        setServiceValues((prev) => {
+          const next = { ...prev };
+
+          payload.forEach((service) => {
+            if (next[service.id] == null) {
+              next[service.id] = 0;
+            }
+          });
+
+          return next;
+        });
+      } catch (err) {
+        if (mounted) {
+          setServiceCatalog([]);
+        }
+      } finally {
+        if (mounted) {
+          setCatalogLoading(false);
+        }
+      }
+    };
+
+    fetchServiceCatalog();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const computeTotal = variants
     .filter((v) => v.category === 'COMPUTE')
     .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
@@ -90,14 +186,17 @@ const PriceCalculatorPage = () => {
     .filter((v) => v.category === 'DATABASE')
     .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
 
-  // Determine storage unit price from first storage variant if available
-  const storageVariant = variants.find((v) => v.category === 'STORAGE');
-  const storageUnitPrice = storageVariant ? Number(storageVariant.basePrice || 0) : 0.10;
-  const storageCost = storageGB * storageUnitPrice;
-  
+  const pricingServices = serviceCatalog.filter((service) =>
+    Object.prototype.hasOwnProperty.call(SERVICE_CATEGORIES, service.category)
+  );
 
-  const bandwidthCost = bandwidthGB * 0.05;
-  const grandTotal = computeTotal + storageCost + bandwidthCost + dbTotal;
+  const pricingTotal = pricingServices.reduce((sum, service) => {
+    const selectedValue = Number(serviceValues[service.id] || 0);
+    const unitPrice = Number(service.basePrice || 0);
+    return sum + selectedValue * unitPrice;
+  }, 0);
+
+  const grandTotal = computeTotal + pricingTotal + dbTotal;
 
   return (
     /* md:pt-4 banayera mathi bata ali space badhayeko chhu balance ko lagi */
@@ -144,44 +243,26 @@ const PriceCalculatorPage = () => {
 
             <section className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
               <h3 className="text-[18px] font-bold text-[#0F172B] mb-8">Storage & Bandwidth</h3>
-              <div className="space-y-10">
-                <div>
-                  <div className="flex justify-between text-[16px] font-medium text-[#0F172B] mb-3 font-work-sans">
-                    <span>Block Storage (GB)</span>
-                  </div>
-                  <div className="relative w-full h-2 bg-[#F1F5F9] rounded-full">
-                    <div className="absolute top-0 left-0 h-full bg-[#0077b6] rounded-full" style={{width: `${(storageGB/5000)*100}%`}}></div>
-                    <input 
-                      type="range" min="0" max="5000" step="50"
-                      value={storageGB}
-                      onChange={(e) => setStorageGB(parseInt(e.target.value))}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              <div className="space-y-4">
+                {catalogLoading ? (
+                  <div className="p-4 text-sm text-slate-500">Loading storage and bandwidth pricing...</div>
+                ) : pricingServices.length === 0 ? (
+                  <div className="p-4 text-sm text-slate-500">No storage or bandwidth pricing available.</div>
+                ) : (
+                  pricingServices.map((service) => (
+                    <PricingServiceCard
+                      key={service.id}
+                      service={service}
+                      value={serviceValues[service.id] || 0}
+                      onChange={(nextValue) =>
+                        setServiceValues((prev) => ({
+                          ...prev,
+                          [service.id]: nextValue,
+                        }))
+                      }
                     />
-                  </div>
-                  <div className="flex justify-between mt-4 text-[13px] font-medium font-work-sans">
-                    <span className="text-slate-400">{storageGB} GB</span>
-                    <span className="text-[#0077b6] font-bold">${storageCost.toFixed(2)}/mo</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[16px] font-medium text-[#0F172B] mb-3 font-work-sans">
-                    <span>Bandwidth (GB)</span>
-                  </div>
-                  <div className="relative w-full h-2 bg-[#F1F5F9] rounded-full">
-                    <div className="absolute top-0 left-0 h-full bg-[#0077b6] rounded-full" style={{width: `${(bandwidthGB/10000)*100}%`}}></div>
-                    <input 
-                      type="range" min="0" max="10000" step="100"
-                      value={bandwidthGB}
-                      onChange={(e) => setBandwidthGB(parseInt(e.target.value))}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex justify-between mt-4 text-[13px] font-medium font-work-sans">
-                    <span className="text-slate-400">{bandwidthGB} GB</span>
-                    <span className="text-[#0077b6] font-bold">${bandwidthCost.toFixed(2)}/mo</span>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
             </section>
 
@@ -223,14 +304,16 @@ const PriceCalculatorPage = () => {
                   <span className="text-slate-400 font-work-sans">Compute</span>
                   <span className="font-bold text-[#0F172B]">${computeTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400 font-work-sans">Storage</span>
-                  <span className="font-bold text-[#0F172B]">${storageCost.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400 font-work-sans">Bandwidth</span>
-                  <span className="font-bold text-[#0F172B]">${bandwidthCost.toFixed(2)}</span>
-                </div>
+                {pricingServices.map((service) => {
+                  const serviceCost = Number(serviceValues[service.id] || 0) * Number(service.basePrice || 0);
+
+                  return (
+                    <div key={service.id} className="flex justify-between">
+                      <span className="text-slate-400 font-work-sans">{service.name}</span>
+                      <span className="font-bold text-[#0F172B]">${serviceCost.toFixed(2)}</span>
+                    </div>
+                  );
+                })}
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-work-sans">Database</span>
                   <span className="font-bold text-[#0F172B]">${dbTotal.toFixed(2)}</span>

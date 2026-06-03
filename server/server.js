@@ -4,6 +4,9 @@ import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import serviceRoutes from "./src/routes/serviceRoutes.js";
+import serviceCatalogRoutes from "./src/routes/serviceCatalogRoutes.js";
+import pricingRoutes from "./src/routes/pricingRoutes.js";
+import adminServiceCatalogRoutes from "./src/routes/adminServiceCatalogRoutes.js";
 import customerRoutes from "./src/routes/customerRoutes.js";
 import adminServiceRequestRoutes from "./src/routes/adminServiceRequestRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
@@ -29,7 +32,16 @@ app.use(express.json());
 // AUTH PATHWAY
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
+// Public pricing endpoint for landing page preview
+app.use("/api/pricing", pricingRoutes);
 app.use("/api/customer", authMiddleware, customerMiddleware, customerRoutes);
+app.use("/api/services", authMiddleware, serviceCatalogRoutes);
+app.use(
+  "/api/admin/service-catalog",
+  authMiddleware,
+  adminMiddleware,
+  adminServiceCatalogRoutes
+);
 
 // ADMIN SERVICE CONFIGURATIONS PATHWAY
 // authMiddleware + adminMiddleware applied to entire admin router

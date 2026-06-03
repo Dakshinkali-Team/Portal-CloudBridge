@@ -27,7 +27,7 @@ const NewsletterCTA = () => {
               focus:outline-none focus:ring-2 focus:ring-white"
             />
 
-            <button className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition whitespace-nowrap">
+            <button className="px-5 py-2.5 bg-[#0B78C1] hover:bg-[#095a99] text-white rounded-lg font-medium transition whitespace-nowrap">
               Subscribe
             </button>
           </div>

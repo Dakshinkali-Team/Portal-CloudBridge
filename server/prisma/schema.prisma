@@ -20,6 +20,8 @@ model User {
   role        Role        @default(CUSTOMER)
   accountType AccountType @default(INDIVIDUAL)
   profile     Profile?
+  resetToken  String?
+  resetTokenExpiry DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

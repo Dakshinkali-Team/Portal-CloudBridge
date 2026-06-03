@@ -2,7 +2,36 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma.js"; 
 import { ROLES } from "../constants/roles.js";
-import { loginSchema, registerSchema } from "../validators/authValidators.js";
+import {
+  loginSchema,
+  registerSchema,
+} from "../validators/authValidators.js";
+import { validateEmail, validatePassword } from "../utils/validation.js";
+
+const RESET_TOKEN_TTL_MINUTES = 15;
+
+const normalizeEmail = (email) => String(email || "").trim();
+
+const createResetToken = (email) =>
+  jwt.sign({ email: normalizeEmail(email) }, process.env.JWT_SECRET, {
+    expiresIn: `${RESET_TOKEN_TTL_MINUTES}m`,
+  });
+
+const verifyResetToken = (token) => jwt.verify(token, process.env.JWT_SECRET);
+
+const buildResetPasswordUrl = (rawToken) => {
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(
+    /\/$/,
+    ""
+  );
+
+  return `${clientUrl}/set-password?token=${encodeURIComponent(rawToken)}`;
+};
+
+const shouldExposeResetUrl = () =>
+  process.env.NODE_ENV !== "production" ||
+  process.env.RESET_PASSWORD_SIMULATE === "true" ||
+  !process.env.SMTP_HOST;
 
 // REGISTER
 export const registerUser = async (req, res) => {
@@ -55,6 +84,12 @@ export const registerUser = async (req, res) => {
         password: hashedPassword,
         role,
         accountType: normalizedAccountType,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
       },
     });
 
@@ -123,6 +158,13 @@ export const loginUser = async (req, res) => {
     // FIND USER
     const user = await prisma.user.findUnique({
       where: { email: email.trim() },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        role: true,
+      },
     });
 
     if (!user) {
@@ -170,6 +212,240 @@ export const loginUser = async (req, res) => {
     res.status(500).json({
       success: false,
       error: err.message,
+    });
+  }
+};
+
+export const checkEmail = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const validation = validateEmail(email);
+
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: validation.error,
+      });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      exists: Boolean(user),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const validation = validateEmail(email);
+
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: validation.error,
+      });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: "If email exists, reset instructions will be sent",
+      });
+    }
+
+    const rawToken = createResetToken(user.email);
+    const resetUrl = buildResetPasswordUrl(rawToken);
+
+    if (shouldExposeResetUrl()) {
+      console.info(`Password reset link for ${user.email}: ${resetUrl}`);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "If email exists, reset instructions will be sent",
+      ...(shouldExposeResetUrl() ? { resetUrl } : {}),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    const rawToken = String(token || "").trim();
+
+    if (!rawToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token is required.",
+      });
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: passwordValidation.error,
+      });
+    }
+
+    let payload;
+    try {
+      payload = verifyResetToken(rawToken);
+    } catch (tokenError) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token is invalid or expired.",
+      });
+    }
+
+    const email = normalizeEmail(payload?.email);
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token is invalid or expired.",
+      });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token is invalid or expired.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, password } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: passwordValidation.error,
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
 };

@@ -4,9 +4,14 @@ import Sidebar from '../components/layout/Sidebar';
 import ProfileInput from '../components/profile/ProfileInput';
 import { useAuth } from '../context/AuthContext';
 import http from '../utils/http';
+import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 
-const SecurityRow = ({ label }) => (
-  <button className="w-full flex items-center px-4 py-3.5 bg-[#F8FAFC] border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
+const SecurityRow = ({ label, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="w-full flex items-center px-4 py-3.5 bg-[#F8FAFC] border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
+  >
     <span className="text-[13px] font-medium text-slate-600">{label}</span>
   </button>
 );
@@ -16,6 +21,7 @@ const ProfilePage = ({ nested = false }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -109,7 +115,10 @@ const ProfilePage = ({ nested = false }) => {
             </h3>
 
             <div className="space-y-2">
-              <SecurityRow label="Change Password" />
+              <SecurityRow
+                label="Change Password"
+                onClick={() => setChangePasswordOpen(true)}
+              />
               <SecurityRow label="Enable Two-Factor Authentication" />
             </div>
           </section>
@@ -130,10 +139,16 @@ const ProfilePage = ({ nested = false }) => {
   );
 
   return nested ? pageContent : (
-    <div className="flex h-screen bg-white font-sans overflow-hidden">
-      <Sidebar />
-      {pageContent}
-    </div>
+    <>
+      <div className="flex h-screen bg-white font-sans overflow-hidden">
+        <Sidebar />
+        {pageContent}
+      </div>
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
+    </>
   );
 };
 

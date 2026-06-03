@@ -1,9 +1,75 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GridBackground from "../../../components/common/GridBackground";
+import http from "../../../utils/http";
+import { useToast } from "../../../context/ToastContext";
 
 const CheckEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const [checking, setChecking] = useState(false);
+  const getSessionItem = (key) =>
+    typeof window !== "undefined" ? window.sessionStorage.getItem(key) : "";
+  const email =
+    location.state?.email || getSessionItem("cloudbridge-reset-email") || "";
+  const resetUrl =
+    location.state?.resetUrl ||
+    getSessionItem("cloudbridge-reset-url") ||
+    "";
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      if (!email) return;
+
+      setChecking(true);
+      try {
+        await http.post("/auth/check-email", {
+          email,
+        });
+      } catch (error) {
+        console.error("Check email error:", error);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    verifyEmail();
+  }, [email]);
+
+  const handleTryAgain = async () => {
+    if (resetUrl) {
+      window.location.href = resetUrl;
+      return;
+    }
+
+    if (!email) {
+      navigate("/forgot-password");
+      return;
+    }
+
+    try {
+      setChecking(true);
+      const { data } = await http.post("/auth/forgot-password", {
+        email,
+      });
+
+      if (data?.resetUrl) {
+        window.sessionStorage.setItem("cloudbridge-reset-url", data.resetUrl);
+      }
+
+      toast.success(data?.message || "Reset link sent to email");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Unable to resend reset link."
+      );
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     // Main Wrapper
@@ -51,10 +117,10 @@ const CheckEmail = () => {
                 Didn't receive the email? Check your spam folder or{" "}
                 <button 
                   type="button" 
-                  onClick={() => console.log("Resend email triggered")} 
+                  onClick={handleTryAgain} 
                   className=" text-blue-600 font-semibold text-[14px] leading-5 hover:underline transition-all"
                 >
-                  try again
+                  {checking ? "Please wait..." : resetUrl ? "open reset link" : "try again"}
                 </button>
               </p>
             </div>

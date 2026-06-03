@@ -1,10 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import GridBackground from "../../../components/common/GridBackground";
 import Logo from "../../../assets/Icon.svg";
+import http from "../../../utils/http";
+import { useToast } from "../../../context/ToastContext";
+import { validatePassword } from "../../../utils/validation";
 
 const SetPassword = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const token = searchParams.get("token") || "";
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (loading) return;
+
+    setErrors({});
+
+    if (!token) {
+      setErrors({ token: "Reset token is missing or invalid." });
+      toast.error("Reset token is missing or invalid.");
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setErrors({ password: passwordValidation.error });
+      return;
+    }
+
+    if (!confirmPassword) {
+      setErrors({ confirmPassword: "Please confirm your password." });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match." });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data } = await http.post("/auth/reset-password", {
+        token,
+        password,
+        confirmPassword,
+      });
+
+      window.sessionStorage.removeItem("cloudbridge-reset-url");
+      window.sessionStorage.removeItem("cloudbridge-reset-email");
+
+      toast.success(data?.message || "Password reset successful");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Unable to reset password."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-start py-20 bg-white overflow-hidden">
       <GridBackground />
@@ -27,15 +95,39 @@ const SetPassword = () => {
             </div>
           </div>
 
-          <form className="flex flex-col w-full">
+          <form className="flex flex-col w-full" onSubmit={handleSubmit}>
             <div className="mb-4">
-              <Input label="Password" type="password" placeholder="Create a strong password" />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Create a strong password"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  if (errors.password) {
+                    setErrors({ ...errors, password: "" });
+                  }
+                }}
+                error={errors.password}
+              />
             </div>
             <div className="mb-8">
-              <Input label="Confirm Password" type="password" placeholder="Create a strong password" />
+              <Input
+                label="Confirm Password"
+                type="password"
+                placeholder="Create a strong password"
+                value={confirmPassword}
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value);
+                  if (errors.confirmPassword) {
+                    setErrors({ ...errors, confirmPassword: "" });
+                  }
+                }}
+                error={errors.confirmPassword}
+              />
             </div>
             
-            <Button text="Complete Setup" />
+            <Button text={loading ? "Completing..." : "Complete Setup"} />
           </form>
         </div>
       </div>

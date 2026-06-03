@@ -1,6 +1,6 @@
 import { useState } from "react";
 // import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import Input from "../../components/common/Input.jsx";
 import Button from "../../components/common/Button.jsx";
@@ -16,6 +16,7 @@ import { validateLoginCredentials } from "../../utils/validation";
 const Login = () => {
   const axiosInstance = useAxios();
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
   const { toast } = useToast();
 
@@ -65,7 +66,18 @@ const Login = () => {
       }
 
       toast.success(res?.data?.message || "Login successful.");
-      navigate(getDefaultRouteForRole(session.role), { replace: true });
+
+      const fromLocation = location.state?.from;
+      const fromPath = fromLocation?.pathname
+        ? `${fromLocation.pathname}${fromLocation.search || ""}${fromLocation.hash || ""}`
+        : undefined;
+
+      const safeRedirect =
+        fromPath && fromPath !== "/login" && fromPath !== "/signup"
+          ? fromPath
+          : getDefaultRouteForRole(session.role);
+
+      navigate(safeRedirect, { replace: true });
     } catch (error) {
       console.error("Login Error:", error);
 

@@ -1,12 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import GridBackground from "../../../components/common/GridBackground";
 import Logo from "../../../assets/Icon.svg";
+import http from "../../../utils/http";
+import { useToast } from "../../../context/ToastContext";
+import { validateEmail } from "../../../utils/validation";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (loading) return;
+
+    setErrors({});
+
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      setErrors({ email: validation.error });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data } = await http.post("/auth/forgot-password", {
+        email: email.trim(),
+      });
+
+      if (data?.resetUrl) {
+        window.sessionStorage.setItem("cloudbridge-reset-url", data.resetUrl);
+      } else {
+        window.sessionStorage.removeItem("cloudbridge-reset-url");
+      }
+
+      window.sessionStorage.setItem("cloudbridge-reset-email", email.trim());
+
+      toast.success(data?.message || "Reset link sent to email");
+      navigate("/check-email", {
+        state: {
+          email: email.trim(),
+        },
+      });
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Unable to send reset link."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     // Main Wrapper
@@ -39,7 +92,7 @@ const ForgotPassword = () => {
             </div>
           </div>
 
-          <div className="flex flex-col w-full gap-3">
+          <form className="flex flex-col w-full gap-3" onSubmit={handleSubmit}>
             
             {/* Email Input Field */}
             <div className="flex flex-col w-full gap-1.5">
@@ -49,11 +102,20 @@ const ForgotPassword = () => {
               <Input 
                 type="email" 
                 placeholder="Enter your email" 
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (errors.email) {
+                    setErrors({ ...errors, email: "" });
+                  }
+                }}
+                error={errors.email}
                 className="w-full h-11"
               />
             </div>
             
-            <Button text="Proceed with reset" />
+            <Button text={loading ? "Sending..." : "Proceed with reset"} />
+          </form>
 
             <button
               type="button"
@@ -74,7 +136,6 @@ const ForgotPassword = () => {
                 Back to log in
               </span>
             </button>
-          </div>
 
         </div>
       </div>
