@@ -1,12 +1,15 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import LogoIcon from "../../assets/Icon.svg";
 import DashboardIcon from "../../assets/dashboardIcons/Dashboard.svg";
 import ServiceConfigIcon from "../../assets/dashboardIcons/ServiceConfig.svg";
 import ServiceRequestIcon from "../../assets/dashboardIcons/ServiceRequest.svg";
 import LogoutIcon from "../../assets/dashboardIcons/Logout.svg";
+import { useAuth } from "../../context/AuthContext";
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const navItems = [
     { name: "Dashboard", path: "/admin-dashboard", icon: DashboardIcon },
@@ -21,7 +24,11 @@ const AdminSidebar = () => {
       icon: ServiceRequestIcon,
     },
   ];
-  // ... rest unchanged
+
+  const handleLogout = () => {
+    signOut();
+    navigate("/login", { replace: true });
+  };
 
  return (
    <div className="h-full flex flex-col">
@@ -73,7 +80,11 @@ const AdminSidebar = () => {
 
   {/* LOGOUT */}
   <div className="border-t border-[#E5E8ED] px-4 py-4">
-    <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg hover:bg-gray-100">
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="flex items-center gap-3 px-4 py-3 w-full rounded-lg hover:bg-gray-100"
+    >
       <img src={LogoutIcon} className="w-5 h-5" />
 
       <span className="font-WorkSans text-[16px] leading-[24px] font-medium text-[#475569]">

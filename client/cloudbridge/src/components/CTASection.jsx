@@ -1,4 +1,5 @@
-import Preview from "../assets/pricing.png";
+import { useNavigate } from "react-router-dom";
+import PricingPreview from "./pricing/PricingPreview";
 
 const features = [
   "No hidden provisioning fees",
@@ -8,6 +9,12 @@ const features = [
 ];
 
 const CTASection = () => {
+  const navigate = useNavigate();
+
+  const handleFullCostClick = () => {
+    navigate("/price-calculator");
+  };
+
   return (
     <section className="py-20 bg-[#FAFAFA]">
       <div className="mx-auto max-w-360 px-6 lg:px-15 flex flex-col lg:flex-row items-center gap-12">
@@ -16,7 +23,7 @@ const CTASection = () => {
           {/* HEADING */}
           <h2 className="text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight mb-6">
             Transparent Pricing,{" "}
-            <span className="text-blue-600">No Surprises.</span>
+            <span className="text-[#0B78C1]">No Surprises.</span>
           </h2>
 
           {/* CHECKLIST */}
@@ -35,18 +42,18 @@ const CTASection = () => {
           </ul>
 
           {/* BUTTON */}
-          <button className="px-5 py-3 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+          <button
+            type="button"
+            onClick={handleFullCostClick}
+            className="px-5 py-3 text-sm bg-[#0B78C1] text-white rounded-md hover:bg-[#095a99] transition"
+          >
             Full Cost Calculator →
           </button>
         </div>
 
-        {/* RIGHT IMAGE */}
+        {/* RIGHT: live pricing preview component */}
         <div className="flex-1 flex justify-center lg:justify-end">
-          <img
-            src={Preview}
-            alt="pricing preview"
-            className=" w-full max-w-md lg:max-w-8/10 object-contain"
-          />
+          <PricingPreview />
         </div>
       </div>
     </section>

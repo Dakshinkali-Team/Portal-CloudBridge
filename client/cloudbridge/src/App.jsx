@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import ProtectedRoute from "./components/routing/ProtectedRoute";
+import PublicOnlyRoute from "./components/routing/PublicOnlyRoute";
 
 import Home from "./pages/Home";
 
@@ -26,23 +28,26 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
 
-        {/* CloudBridge Portal Features for Customer*/}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/service-request" element={<ServiceRequest />} />
-        <Route path="/price-calculator" element={<PriceCalculator />} />
-        <Route path="/services" element={<MyServices />} />
-        <Route path="/my-services" element={<MyServicesSection />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/service-request" element={<ServiceRequest />} />
+          <Route path="/price-calculator" element={<PriceCalculator />} />
+          <Route path="/services" element={<MyServices />} />
+          <Route path="/my-services" element={<MyServicesSection />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
 
-        {/* CloudBridge Portal Features for Admin*/}
-        <Route path="/admin-dashboard" element={<AdminDashboardLayout />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="service-config" element={<AdminServiceConfig />} />
-          <Route path="service-requests" element={<AdminServiceRequest />} />
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin-dashboard" element={<AdminDashboardLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="service-config" element={<AdminServiceConfig />} />
+            <Route path="service-requests" element={<AdminServiceRequest />} />
+          </Route>
         </Route>
 
         {/* Password Recovery Flow */}

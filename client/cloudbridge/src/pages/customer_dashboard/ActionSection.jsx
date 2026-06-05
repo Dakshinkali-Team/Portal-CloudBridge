@@ -1,10 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ActionCard from "./ActionCard";
 
 import Icon1 from "../../assets/quickactionicon/newservicerequest.png";
 import Icon2 from "../../assets/quickactionicon/pricecalculator.png";
 
 const ActionSection = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex gap-6 w-full">
 
@@ -12,7 +15,10 @@ const ActionSection = () => {
       <ActionCard title="Quick Actions">
         <div className="w-full flex flex-col gap-[12px]">
 
-          <div className="w-full flex items-center gap-[12px] p-[16px] rounded-[8px] border border-[#DBEAFE] bg-[#EFF6FF] hover:shadow-sm transition cursor-pointer">
+          <div
+            onClick={() => navigate("/service-request")}
+            className="w-full flex items-center gap-[12px] p-[16px] rounded-[8px] border border-[#DBEAFE] bg-[#EFF6FF] hover:shadow-sm transition cursor-pointer"
+          >
             <img src={Icon1} alt="" className="w-[20px] h-[20px] flex-shrink-0" />
             <div className="flex flex-col">
               <p className="w-[164px] h-[24px] text-[#0F172B] opacity-100 rotate-0 font-inter font-medium text-[16px] leading-[24px] tracking-[0px]">New Service Request</p>
@@ -20,7 +26,10 @@ const ActionSection = () => {
             </div>
           </div>
 
-          <div className="w-full flex items-center gap-[12px] p-[16px] rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] hover:shadow-sm transition cursor-pointer">
+          <div
+            onClick={() => navigate("/price-calculator")}
+            className="w-full flex items-center gap-[12px] p-[16px] rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] hover:shadow-sm transition cursor-pointer"
+          >
             <img src={Icon2} alt="" className="w-[20px] h-[20px] flex-shrink-0" />
             <div className="flex flex-col">
               <p className="w-[164px] h-[24px] text-[#0F172B] opacity-100 rotate-0 font-inter font-medium text-[16px] leading-[24px] tracking-[0px]">Price Calculator</p>

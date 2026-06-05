@@ -5,8 +5,8 @@ export default function MyServices() {
   return (
     <div className="flex h-screen bg-[#FDFDFD] overflow-hidden">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="pt-6 pl-4 pr-9 max-w-9xl">
+      <main className="flex-1 overflow-y-auto p-8">
+        <div className="w-full max-w-9xl">
           <header className="mb-2">
             <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">
               My Services
@@ -22,4 +22,4 @@ export default function MyServices() {
       </main>
     </div>
   );
-} 
+}

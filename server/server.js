@@ -2,72 +2,84 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import serviceRoutes from "./src/routes/serviceRoutes.js";
+import serviceCatalogRoutes from "./src/routes/serviceCatalogRoutes.js";
+import pricingRoutes from "./src/routes/pricingRoutes.js";
+import adminServiceCatalogRoutes from "./src/routes/adminServiceCatalogRoutes.js";
+import customerRoutes from "./src/routes/customerRoutes.js";
+import adminServiceRequestRoutes from "./src/routes/adminServiceRequestRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
+import { adminMiddleware } from "./src/middleware/adminMiddleware.js";
+import {
+  errorHandler,
+  notFoundHandler,
+} from "./src/middleware/errorHandler.js";
 import { ROLES } from "./src/constants/roles.js";
+import { customerMiddleware } from "./src/middleware/customerMiddleware.js";
 
 dotenv.config();
 
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
-// AUTH ROUTES
+// ==========================================
+// APPLICATION ROUTE GATEWAYS
+// ==========================================
+
+// AUTH PATHWAY
 app.use("/api/auth", authRoutes);
-
-// TEST ROUTE
-app.get("/", (req, res) => {
-  res.send("Server Running 🚀");
-});
-
-// CUSTOMER DASHBOARD
-app.get(
-  "/api/customer/dashboard",
+app.use("/api", userRoutes);
+// Public pricing endpoint for landing page preview
+app.use("/api/pricing", pricingRoutes);
+app.use("/api/customer", authMiddleware, customerMiddleware, customerRoutes);
+app.use("/api/services", authMiddleware, serviceCatalogRoutes);
+app.use(
+  "/api/admin/service-catalog",
   authMiddleware,
-  (req, res) => {
-    if (req.user.role !== ROLES.CUSTOMER) {
-      return res.status(403).json({
-        message: "Customer access only",
-      });
-    }
-
-    res.json({
-      message: "Welcome Customer Dashboard",
-      user: req.user,
-    });
-  }
+  adminMiddleware,
+  adminServiceCatalogRoutes
 );
 
-// ADMIN DASHBOARD
-app.get(
-  "/api/admin/dashboard",
+// ADMIN SERVICE CONFIGURATIONS PATHWAY
+// authMiddleware + adminMiddleware applied to entire admin router
+app.use("/api/admin", authMiddleware, adminMiddleware, serviceRoutes);
+app.use(
+  "/api/admin/service-requests",
   authMiddleware,
-  (req, res) => {
-    if (
-      req.user.role !== ROLES.ADMIN &&
-      req.user.role !== ROLES.SUPER_ADMIN
-    ) {
-      return res.status(403).json({
-        message: "Admin access only",
-      });
-    }
-
-    res.json({
-      message: "Welcome Admin Dashboard",
-      user: req.user,
-    });
-  }
+  adminMiddleware,
+  adminServiceRequestRoutes
 );
 
-const PORT = 5000;
+// HEALTH DIAGNOSTIC ROOT INTERCEPTOR
+app.get("/", (req, res) => res.send("Server Running"));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ==========================================
+// PROTECTED ROUTE ENTITIES (DASHBOARDS)
+// ==========================================
+
+// CUSTOMER DASHBOARD SECURITY GATEWAY
+app.get("/api/customer/dashboard", authMiddleware, (req, res) => {
+  if (req.user.role !== ROLES.CUSTOMER) {
+    return res.status(403).json({ message: "Customer access only" });
+  }
+
+  res.json({ message: "Welcome Customer Dashboard", user: req.user });
 });
 
+// ADMIN DASHBOARD SECURITY GATEWAY
+app.get("/api/admin/dashboard", authMiddleware, (req, res) => {
+  if (req.user.role !== ROLES.ADMIN && req.user.role !== ROLES.SUPER_ADMIN) {
+    return res.status(403).json({ message: "Admin access only" });
+  }
 
-// this is server.js
+  res.json({ message: "Welcome Admin Dashboard", user: req.user });
+});
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
