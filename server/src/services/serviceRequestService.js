@@ -42,6 +42,9 @@ const SERVICE_REQUEST_INCLUDE = {
           basePrice: true,
           currency: true,
           billingInterval: true,
+          // Variant attributes are optional metadata for display only.
+          // An empty VariantAttribute table will return an empty array here,
+          // not a failure.
           attributes: {
             orderBy: { id: "asc" },
             select: {
@@ -87,9 +90,6 @@ const serializeRequestItem = (item) => ({
 
 const serializeServiceRequest = (serviceRequest) => {
   const items = serviceRequest.items.map(serializeRequestItem);
-
-  console.log(items);
-  
 
   return {
     id: serviceRequest.id,

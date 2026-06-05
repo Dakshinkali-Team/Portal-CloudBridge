@@ -1,7 +1,12 @@
 import prisma from "../config/prisma.js";
 
-const CALCULATOR_CATEGORIES = ["STORAGE", "NETWORK"];
 const SERVICE_CATEGORIES = ["COMPUTE", "DATABASE", "STORAGE", "NETWORK"];
+const CATEGORY_TO_RESPONSE_KEY = {
+  COMPUTE: "compute",
+  DATABASE: "database",
+  STORAGE: "blockStorage",
+  NETWORK: "bandwidth",
+};
 
 const UNIT_BY_CATEGORY = {
   STORAGE: "GB",
@@ -27,6 +32,9 @@ const serializeCatalogItem = (catalogItem) => ({
   basePrice: Number(catalogItem.basePrice),
   unit: UNIT_BY_CATEGORY[catalogItem.category] ?? null,
   category: catalogItem.category,
+  hasSliders: Boolean(catalogItem.hasSliders),
+  storagePrice: Number(catalogItem.storagePrice),
+  isFixedVariant: Boolean(catalogItem.isFixedVariant),
 });
 
 const serializeAdminCatalogItem = (catalogItem) => ({
@@ -152,9 +160,6 @@ export const getServiceCatalogForCalculator = async () => {
   const catalogItems = await prisma.serviceCatalog.findMany({
     where: {
       isActive: true,
-      category: {
-        in: CALCULATOR_CATEGORIES,
-      },
     },
     orderBy: [{ category: "asc" }, { id: "asc" }],
     select: {
@@ -162,10 +167,30 @@ export const getServiceCatalogForCalculator = async () => {
       name: true,
       basePrice: true,
       category: true,
+      hasSliders: true,
+      storagePrice: true,
+      isFixedVariant: true,
     },
   });
 
-  return catalogItems.map(serializeCatalogItem);
+  const catalogByCategory = {
+    compute: [],
+    database: [],
+    blockStorage: [],
+    bandwidth: [],
+  };
+
+  for (const item of catalogItems) {
+    const responseKey = CATEGORY_TO_RESPONSE_KEY[item.category];
+
+    if (!responseKey) {
+      continue;
+    }
+
+    catalogByCategory[responseKey].push(serializeCatalogItem(item));
+  }
+
+  return catalogByCategory;
 };
 
 export const getAdminServiceCatalog = async () => {

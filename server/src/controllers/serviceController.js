@@ -277,7 +277,7 @@ const handleControllerError = (res, error, fallbackMessage) => {
     });
   }
 
-  console.error(fallbackMessage, error);
+  console.error(fallbackMessage, error.stack ?? error);
 
   return res.status(500).json({
     success: false,
@@ -320,16 +320,40 @@ export const createService = async (req, res) => {
 };
 
 // ======================================================
-// 2. GET ALL SERVICES (PAGINATED)
+// 2. GET ALL SERVICES (PAGINATED OR FULL)
 // ======================================================
 export const getServices = async (req, res) => {
   try {
-    const page = parsePositiveInt(req.query.page ?? 1, "page");
-    const limit = parsePositiveInt(req.query.limit ?? 10, "limit");
-    const skip = (page - 1) * limit;
     const where = hasValue(req.query.category)
       ? { category: normalizeCategory(req.query.category) }
       : undefined;
+
+    // If no limit specified in query, fetch ALL services
+    if (!req.query.limit) {
+      const services = await prisma.service.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        include: SERVICE_INCLUDE,
+      });
+
+      const total = await prisma.service.count({ where });
+
+      return res.status(200).json({
+        success: true,
+        data: services.map(serializeService),
+        pagination: {
+          total,
+          page: 1,
+          limit: total,
+          totalPages: 1,
+        },
+      });
+    }
+
+    // If limit is specified, use pagination
+    const page = parsePositiveInt(req.query.page ?? 1, "page");
+    const limit = parsePositiveInt(req.query.limit, "limit");
+    const skip = (page - 1) * limit;
 
     const [services, total] = await prisma.$transaction([
       prisma.service.findMany({
@@ -391,75 +415,154 @@ export const getServiceById = async (req, res) => {
 export const updateService = async (req, res) => {
   try {
     const id = parsePositiveInt(req.params.id, "id");
+
+    console.log("SERVICE UPDATE REQUEST:", {
+      params: req.params,
+      body: req.body,
+    });
+
     const serviceData = buildServiceData(req.body, { partial: true });
-    const shouldReplaceVariants =
-      Array.isArray(req.body.variants) ||
+    const hasExplicitVariants = Array.isArray(req.body.variants);
+    const hasTopLevelAttributes = Array.isArray(req.body.attributes);
+    const hasTopLevelVariantFields =
       hasValue(req.body.basePrice) ||
       hasValue(req.body.currency) ||
-      hasValue(req.body.billingInterval) ||
-      Array.isArray(req.body.attributes);
+      hasValue(req.body.billingInterval);
 
-    const variants = shouldReplaceVariants
-      ? getNormalizedVariants(req.body, { required: true })
-      : [];
+    const isSingleVariantPriceUpdate =
+      !hasExplicitVariants &&
+      !hasTopLevelAttributes &&
+      hasTopLevelVariantFields;
 
-    const updatedService = await prisma.$transaction(async (tx) => {
-      const existingService = await tx.service.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          _count: {
-            select: {
-              requestItems: true,
+    const variants =
+      hasExplicitVariants || hasTopLevelAttributes || isSingleVariantPriceUpdate
+        ? getNormalizedVariants(req.body, { required: true })
+        : [];
+
+    const updatedService = await prisma.$transaction(
+      async (tx) => {
+        const existingService = await tx.service.findUnique({
+          where: { id },
+          include: {
+            variants: {
+              orderBy: { id: "asc" },
+              include: {
+                attributes: {
+                  orderBy: { id: "asc" },
+                },
+              },
+            },
+            _count: {
+              select: {
+                requestItems: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      if (!existingService) {
-        throw createHttpError(404, "Service not found");
-      }
+        if (!existingService) {
+          throw createHttpError(404, "Service not found");
+        }
 
-      if (shouldReplaceVariants && existingService._count.requestItems > 0) {
-        throw createHttpError(
-          400,
-          "Cannot replace variants for a service that is already referenced in service requests"
-        );
-      }
+        console.log("SERVICE UPDATE EXISTING VARIANTS:", existingService.variants);
+        console.log("SERVICE UPDATE INCOMING VARIANTS:", variants);
+        console.log("SERVICE UPDATE MODE:", {
+          hasExplicitVariants,
+          hasTopLevelAttributes,
+          isSingleVariantPriceUpdate,
+        });
 
-      await tx.service.update({
-        where: { id },
-        data: {
-          ...serviceData,
-          ...(shouldReplaceVariants
-            ? {
-                variants: {
-                  deleteMany: {},
-                  create: variants.map((variant) => ({
-                    basePrice: variant.basePrice,
-                    currency: variant.currency,
-                    billingInterval: variant.billingInterval,
-                    attributes: {
-                      create: variant.attributes,
-                    },
-                  })),
-                },
-              }
-            : {}),
-        },
-      });
+        const shouldReplaceVariants = hasExplicitVariants || hasTopLevelAttributes;
 
-      return tx.service.findUnique({
-        where: { id },
-        include: SERVICE_INCLUDE,
-      });
-    });
+        if (shouldReplaceVariants && existingService._count.requestItems > 0) {
+          throw createHttpError(
+            400,
+            "Cannot replace variants for a service that is already referenced in service requests"
+          );
+        }
+
+        if (isSingleVariantPriceUpdate) {
+          if (existingService.variants.length !== 1) {
+            throw createHttpError(
+              400,
+              "Cannot update a single variant price when the service has multiple variants"
+            );
+          }
+
+          const variantUpdateData = {};
+
+          if (hasValue(req.body.basePrice)) {
+            variantUpdateData.basePrice = parseNumberField(
+              req.body.basePrice,
+              "basePrice"
+            );
+          }
+
+          if (hasValue(req.body.currency)) {
+            variantUpdateData.currency = asTrimmedString(req.body.currency).toUpperCase();
+          }
+
+          if (hasValue(req.body.billingInterval)) {
+            variantUpdateData.billingInterval = asTrimmedString(
+              req.body.billingInterval
+            ).toUpperCase();
+          }
+
+          await tx.service.update({
+            where: { id },
+            data: {
+              ...serviceData,
+            },
+          });
+
+          await tx.serviceVariant.update({
+            where: { id: existingService.variants[0].id },
+            data: variantUpdateData,
+          });
+        } else if (shouldReplaceVariants) {
+          await tx.service.update({
+            where: { id },
+            data: {
+              ...serviceData,
+              variants: {
+                deleteMany: {},
+                create: variants.map((variant) => ({
+                  basePrice: variant.basePrice,
+                  currency: variant.currency,
+                  billingInterval: variant.billingInterval,
+                  attributes: {
+                    create: variant.attributes,
+                  },
+                })),
+              },
+            },
+          });
+        } else {
+          await tx.service.update({
+            where: { id },
+            data: {
+              ...serviceData,
+            },
+          });
+        }
+
+        return tx.service.findUnique({
+          where: { id },
+          include: SERVICE_INCLUDE,
+        });
+      },
+      { timeout: 10000 }
+    );
 
     return res.status(200).json({
       success: true,
       data: serializeService(updatedService),
     });
   } catch (error) {
+    console.error("SERVICE UPDATE ERROR:", error);
+    console.error("REQUEST BODY:", req.body);
+    console.error("REQUEST PARAMS:", req.params);
+
     return handleControllerError(res, error, "Update Service Error:");
   }
 };

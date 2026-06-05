@@ -131,7 +131,7 @@ export default function AdminServiceRequest() {
   };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen px-4 py-6 lg:px-8">
+    <div className="bg-[#F8FAFC] min-h-screen">
       <PageHeader
         title="Service Request Management"
         subtitle="Review and manage customer service requests"

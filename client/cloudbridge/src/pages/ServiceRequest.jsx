@@ -230,15 +230,19 @@ const ServiceRequest = () => {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto">
-        <div className="lg:col-span-2 space-y-6">
-          <h1 className="text-DM Sans text-3xl font-bold">New Service Request</h1>
-          <p className="text-Work Sans text-regular text-base text-left -mt-4 pb-2 text-[#45556C]">
-            Select the cloud services you need and submit the request
-          </p>
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="w-full max-w-9xl">
+          <header className="mb-2">
+            <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">
+              New Service Request
+            </h1>
+            <p className="text-slate-500 text-base mt-1">
+              Select the cloud services you need and submit the request
+            </p>
+          </header>
 
           {servicesError ? (
-            <div className="flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
               <span>{servicesError}</span>
               <button
                 type="button"
@@ -250,68 +254,72 @@ const ServiceRequest = () => {
             </div>
           ) : null}
 
-          {SERVICE_SECTIONS.map((section) => {
-            const services = servicesByCategory[section.key] ?? [];
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 space-y-6">
+              {SERVICE_SECTIONS.map((section) => {
+                const services = servicesByCategory[section.key] ?? [];
 
-            return (
-              <Card
-                key={section.key}
-                title={
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={section.icon}
-                      alt={`${section.label} icon`}
-                      className="w-8 h-8"
-                    />
-                    <span>{section.label}</span>
-                  </div>
-                }
-              >
-                {loadingServices ? (
-                  <p className="text-sm text-[#45556C]">Loading services...</p>
-                ) : services.length > 0 ? (
-                  services.map((item) => (
-                    <ServiceItem
-                      key={item.id}
-                      {...item}
-                      checked={selected.some((service) => service.id === item.id)}
-                      onChange={() => handleToggle(item)}
-                    />
-                  ))
-                ) : (
-                  <p className="text-sm text-[#45556C]">
-                    No {section.label.toLowerCase()} services available right now.
-                  </p>
-                )}
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="space-y-4 mt-14 sticky top-20">
-          <SummaryCard
-            total={total}
-            count={count}
-            onSubmit={handleSubmitRequest}
-            submitting={submittingRequest}
-            disabled={loadingServices || submittingRequest || count === 0}
-          />
-
-          <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm min-h-25">
-            <div className="flex items-center gap-3">
-              <img
-                src={EnterpriseIcon}
-                alt="Enterprise support icon"
-                className="w-6 h-6 shrink-0"
-              />
-              <h2 className="text-Work Sans text-sm font-semibold whitespace-nowrap">
-                Enterprise Support Included
-              </h2>
+                return (
+                  <Card
+                    key={section.key}
+                    title={
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={section.icon}
+                          alt={`${section.label} icon`}
+                          className="w-8 h-8"
+                        />
+                        <span>{section.label}</span>
+                      </div>
+                    }
+                  >
+                    {loadingServices ? (
+                      <p className="text-sm text-[#45556C]">Loading services...</p>
+                    ) : services.length > 0 ? (
+                      services.map((item) => (
+                        <ServiceItem
+                          key={item.id}
+                          {...item}
+                          checked={selected.some((service) => service.id === item.id)}
+                          onChange={() => handleToggle(item)}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-sm text-[#45556C]">
+                        No {section.label.toLowerCase()} services available right now.
+                      </p>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
 
-            <p className="mt-2 pl-9 text-Work Sans text-regular">
-              24/7 support and 99.9% uptime SLA with all services.
-            </p>
+            <div className="h-fit space-y-4 self-start lg:sticky lg:top-10">
+              <SummaryCard
+                total={total}
+                count={count}
+                onSubmit={handleSubmitRequest}
+                submitting={submittingRequest}
+                disabled={loadingServices || submittingRequest || count === 0}
+              />
+
+              <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm min-h-25">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={EnterpriseIcon}
+                    alt="Enterprise support icon"
+                    className="w-6 h-6 shrink-0"
+                  />
+                  <h2 className="text-Work Sans text-sm font-semibold whitespace-nowrap">
+                    Enterprise Support Included
+                  </h2>
+                </div>
+
+                <p className="mt-2 pl-9 text-Work Sans text-regular">
+                  24/7 support and 99.9% uptime SLA with all services.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </main>

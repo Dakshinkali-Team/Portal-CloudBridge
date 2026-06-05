@@ -8,7 +8,7 @@ const SummaryCard = ({
   disabled = false,
 }) => {
   return (
-    <div className="bg-white shadow-sm rounded-2xl p-5 border border-gray-100 min-h-60 space-y-6 mt-11 ">
+    <div className="h-fit bg-white shadow-sm rounded-2xl p-5 border border-gray-100 min-h-60 space-y-6">
       <h3 className="text-DM Sans text-lg font-semibold mb-4">Request Summary</h3>
 
       {/* Selected Services */}

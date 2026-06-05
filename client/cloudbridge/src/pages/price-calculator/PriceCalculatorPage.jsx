@@ -22,11 +22,6 @@ const InstanceRow = ({ label, price, value, onAdd, onSub }) => (
   </div>
 );
 
-const SERVICE_CATEGORIES = {
-  STORAGE: 'Storage',
-  NETWORK: 'Bandwidth',
-};
-
 const getSliderConfig = (category) => {
   if (category === 'NETWORK') {
     return { max: 10000, step: 100 };
@@ -36,7 +31,8 @@ const getSliderConfig = (category) => {
 };
 
 const PricingServiceCard = ({ service, value, onChange }) => {
-  const unitPrice = Number(service.basePrice ?? 0);
+  // Use storagePrice as the unit rate for STORAGE and NETWORK
+  const unitPrice = Number(service.storagePrice ?? 0);
   const selectedValue = Number(value ?? 0);
   const total = selectedValue * unitPrice;
   const { max, step } = getSliderConfig(service.category);
@@ -74,75 +70,22 @@ const PricingServiceCard = ({ service, value, onChange }) => {
 };
 
 const PriceCalculatorPage = () => {
-  const [variants, setVariants] = useState([]); // flattened variants
-  const [variantCounts, setVariantCounts] = useState({}); // { variantId: qty }
-  const [serviceCatalog, setServiceCatalog] = useState([]);
+  const [catalogCounts, setCatalogCounts] = useState({});
+  const [serviceCatalog, setServiceCatalog] = useState({});
   const [serviceValues, setServiceValues] = useState({});
-  const [loading, setLoading] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-    const fetchServices = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await http.get('/customer/services');
-        const payload = Array.isArray(res.data?.data) ? res.data.data : [];
-
-        if (!mounted) return;
-
-        // Flatten variants
-        const v = [];
-        payload.forEach((svc) => {
-          const svcVariants = Array.isArray(svc.variants) ? svc.variants : [];
-          svcVariants.forEach((variant) => {
-            v.push({
-              id: variant.id,
-              serviceId: svc.id,
-              serviceName: svc.name,
-              category: svc.category,
-              basePrice: variant.basePrice ?? 0,
-              billingInterval: variant.billingInterval ?? "MONTHLY",
-              attributes: Array.isArray(variant.attributes) ? variant.attributes : [],
-              currency: variant.currency ?? "USD",
-            });
-          });
-        });
-
-        setVariants(v);
-
-        // Initialize counts to 0 for all variants (or keep previous)
-        setVariantCounts((prev) => {
-          const next = { ...prev };
-          v.forEach((vt) => {
-            if (next[vt.id] == null) next[vt.id] = 0;
-          });
-          return next;
-        });
-      } catch (err) {
-        setError(err?.response?.data?.error || err.message || 'Failed to load services');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServices();
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     let mounted = true;
 
     const fetchServiceCatalog = async () => {
       setCatalogLoading(true);
+      setError(null);
 
       try {
         const res = await http.get('/services/catalog');
-        const payload = Array.isArray(res.data?.data) ? res.data.data : [];
+        const payload = res.data?.data || {};
 
         if (!mounted) {
           return;
@@ -151,8 +94,30 @@ const PriceCalculatorPage = () => {
         setServiceCatalog(payload);
         setServiceValues((prev) => {
           const next = { ...prev };
+          const allServices = [
+            ...(Array.isArray(payload.compute) ? payload.compute : []),
+            ...(Array.isArray(payload.database) ? payload.database : []),
+            ...(Array.isArray(payload.blockStorage) ? payload.blockStorage : []),
+            ...(Array.isArray(payload.bandwidth) ? payload.bandwidth : []),
+          ];
 
-          payload.forEach((service) => {
+          allServices.forEach((service) => {
+            if (next[service.id] == null) {
+              next[service.id] = 0;
+            }
+          });
+
+          return next;
+        });
+
+        setCatalogCounts((prev) => {
+          const next = { ...prev };
+          const allItems = [
+            ...(Array.isArray(payload.compute) ? payload.compute : []),
+            ...(Array.isArray(payload.database) ? payload.database : []),
+          ];
+
+          allItems.forEach((service) => {
             if (next[service.id] == null) {
               next[service.id] = 0;
             }
@@ -162,7 +127,8 @@ const PriceCalculatorPage = () => {
         });
       } catch (err) {
         if (mounted) {
-          setServiceCatalog([]);
+          setServiceCatalog({});
+          setError(err?.response?.data?.error || err.message || 'Failed to load service catalog');
         }
       } finally {
         if (mounted) {
@@ -178,21 +144,24 @@ const PriceCalculatorPage = () => {
     };
   }, []);
 
-  const computeTotal = variants
-    .filter((v) => v.category === 'COMPUTE')
-    .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
-
-  const dbTotal = variants
-    .filter((v) => v.category === 'DATABASE')
-    .reduce((sum, v) => sum + (Number(variantCounts[v.id] || 0) * Number(v.basePrice || 0)), 0);
-
-  const pricingServices = serviceCatalog.filter((service) =>
-    Object.prototype.hasOwnProperty.call(SERVICE_CATEGORIES, service.category)
+  const computeTotal = (Array.isArray(serviceCatalog.compute) ? serviceCatalog.compute : []).reduce(
+    (sum, item) => sum + (Number(catalogCounts[item.id] || 0) * Number(item.basePrice || 0)),
+    0
   );
+
+  const dbTotal = (Array.isArray(serviceCatalog.database) ? serviceCatalog.database : []).reduce(
+    (sum, item) => sum + (Number(catalogCounts[item.id] || 0) * Number(item.basePrice || 0)),
+    0
+  );
+
+  const pricingServices = [
+    ...(Array.isArray(serviceCatalog.blockStorage) ? serviceCatalog.blockStorage : []),
+    ...(Array.isArray(serviceCatalog.bandwidth) ? serviceCatalog.bandwidth : []),
+  ];
 
   const pricingTotal = pricingServices.reduce((sum, service) => {
     const selectedValue = Number(serviceValues[service.id] || 0);
-    const unitPrice = Number(service.basePrice || 0);
+    const unitPrice = Number(service.storagePrice || 0);
     return sum + selectedValue * unitPrice;
   }, 0);
 
@@ -220,23 +189,21 @@ const PriceCalculatorPage = () => {
             <section className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
               <h3 className="text-[18px] font-bold text-[#0F172B] mb-2">Compute Instances</h3>
               <div className="space-y-0">
-                {loading ? (
-                  <div className="p-4 text-sm text-slate-500">Loading compute variants...</div>
+                {catalogLoading ? (
+                  <div className="p-4 text-sm text-slate-500">Loading compute services...</div>
+                ) : (Array.isArray(serviceCatalog.compute) ? serviceCatalog.compute.length === 0 : true) ? (
+                  <div className="p-4 text-sm text-slate-500">No compute instances available.</div>
                 ) : (
-                  variants.filter((v) => v.category === 'COMPUTE').length === 0 ? (
-                    <div className="p-4 text-sm text-slate-500">No compute instances available.</div>
-                  ) : (
-                    variants.filter((v) => v.category === 'COMPUTE').map((v) => (
-                      <InstanceRow
-                        key={v.id}
-                        label={`${v.serviceName} (${v.billingInterval.toLowerCase()})`}
-                        price={v.basePrice}
-                        value={variantCounts[v.id] || 0}
-                        onAdd={() => setVariantCounts((p) => ({ ...p, [v.id]: (p[v.id] || 0) + 1 }))}
-                        onSub={() => setVariantCounts((p) => ({ ...p, [v.id]: Math.max(0, (p[v.id] || 0) - 1) }))}
-                      />
-                    ))
-                  )
+                  serviceCatalog.compute.map((item) => (
+                    <InstanceRow
+                      key={item.id}
+                      label={item.name}
+                      price={item.basePrice}
+                      value={catalogCounts[item.id] || 0}
+                      onAdd={() => setCatalogCounts((p) => ({ ...p, [item.id]: (p[item.id] || 0) + 1 }))}
+                      onSub={() => setCatalogCounts((p) => ({ ...p, [item.id]: Math.max(0, (p[item.id] || 0) - 1) }))}
+                    />
+                  ))
                 )}
               </div>
             </section>
@@ -269,23 +236,21 @@ const PriceCalculatorPage = () => {
             <section className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
               <h3 className="text-[18px] font-bold text-[#0F172B] mb-2">Database Services</h3>
               <div className="space-y-0">
-                {loading ? (
-                  <div className="p-4 text-sm text-slate-500">Loading database variants...</div>
+                {catalogLoading ? (
+                  <div className="p-4 text-sm text-slate-500">Loading database services...</div>
+                ) : (Array.isArray(serviceCatalog.database) ? serviceCatalog.database.length === 0 : true) ? (
+                  <div className="p-4 text-sm text-slate-500">No database services available.</div>
                 ) : (
-                  variants.filter((v) => v.category === 'DATABASE').length === 0 ? (
-                    <div className="p-4 text-sm text-slate-500">No database variants available.</div>
-                  ) : (
-                    variants.filter((v) => v.category === 'DATABASE').map((v) => (
-                      <InstanceRow
-                        key={v.id}
-                        label={`${v.serviceName} (${v.billingInterval.toLowerCase()})`}
-                        price={v.basePrice}
-                        value={variantCounts[v.id] || 0}
-                        onAdd={() => setVariantCounts((p) => ({ ...p, [v.id]: (p[v.id] || 0) + 1 }))}
-                        onSub={() => setVariantCounts((p) => ({ ...p, [v.id]: Math.max(0, (p[v.id] || 0) - 1) }))}
-                      />
-                    ))
-                  )
+                  serviceCatalog.database.map((item) => (
+                    <InstanceRow
+                      key={item.id}
+                      label={item.name}
+                      price={item.basePrice}
+                      value={catalogCounts[item.id] || 0}
+                      onAdd={() => setCatalogCounts((p) => ({ ...p, [item.id]: (p[item.id] || 0) + 1 }))}
+                      onSub={() => setCatalogCounts((p) => ({ ...p, [item.id]: Math.max(0, (p[item.id] || 0) - 1) }))}
+                    />
+                  ))
                 )}
               </div>
             </section>
@@ -305,7 +270,7 @@ const PriceCalculatorPage = () => {
                   <span className="font-bold text-[#0F172B]">${computeTotal.toFixed(2)}</span>
                 </div>
                 {pricingServices.map((service) => {
-                  const serviceCost = Number(serviceValues[service.id] || 0) * Number(service.basePrice || 0);
+                  const serviceCost = Number(serviceValues[service.id] || 0) * Number(service.storagePrice || 0);
 
                   return (
                     <div key={service.id} className="flex justify-between">
