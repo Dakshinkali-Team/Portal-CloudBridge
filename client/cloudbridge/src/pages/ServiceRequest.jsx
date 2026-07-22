@@ -232,7 +232,7 @@ const ServiceRequest = () => {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="w-full max-w-9xl">
-          <header className="mb-2">
+          <header className="mb-4">
             <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">
               New Service Request
             </h1>
