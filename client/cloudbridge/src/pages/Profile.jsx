@@ -82,7 +82,7 @@ const ProfilePage = ({ nested = false }) => {
 
   const pageContent = (
     <main className="flex-1 h-full overflow-y-auto p-8 bg-slate-50/50">
-      <header className="mb-6 max-w-[700px]">
+      <header className="mb-4 max-w-[700px]">
         <h2 className="text-2xl font-bold text-slate-900">My Profile</h2>
         <p className="text-sm text-slate-500">Manage your account information</p>
       </header>

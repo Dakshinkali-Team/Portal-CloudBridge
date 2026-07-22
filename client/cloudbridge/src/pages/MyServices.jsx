@@ -7,7 +7,7 @@ export default function MyServices() {
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-8">
         <div className="w-full max-w-9xl">
-          <header className="mb-2">
+          <header className="mb-4">
             <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">
               My Services
             </h1>
