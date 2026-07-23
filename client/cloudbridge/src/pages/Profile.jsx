@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Menu } from 'lucide-react';
 import { User, Mail, Building2, Calendar } from 'lucide-react';
 import Sidebar from '../components/layout/Sidebar';
 import ProfileInput from '../components/profile/ProfileInput';
@@ -22,6 +23,7 @@ const ProfilePage = ({ nested = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -141,8 +143,21 @@ const ProfilePage = ({ nested = false }) => {
   return nested ? pageContent : (
     <>
       <div className="flex h-screen bg-white font-sans overflow-hidden">
-        <Sidebar />
-        {pageContent}
+        <Sidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="flex-1 min-w-0 flex flex-col">
+          <header className="lg:hidden flex items-center gap-3 h-14 px-4 bg-white border-b border-slate-200 shrink-0">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open navigation"
+              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+            <span className="text-[15px] font-semibold text-[#0F172B]">CloudBridge</span>
+          </header>
+          {pageContent}
+        </div>
       </div>
       <ChangePasswordModal
         isOpen={changePasswordOpen}
