@@ -41,7 +41,19 @@ const XIcon = () => (
 
 export default function AdminServiceRequest() {
   const [requests, setRequests] = useState([]);
+  const [summaryStats, setSummaryStats] = useState([
+    { label: "Total Requests", value: 0 },
+    { label: "Pending", value: 0 },
+    { label: "Approved", value: 0 },
+    { label: "Rejected", value: 0 },
+  ]);
   const [activeTab, setActiveTab] = useState("All");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState({});
@@ -54,8 +66,26 @@ export default function AdminServiceRequest() {
       setError(null);
 
       try {
-        const response = await http.get("/admin/service-requests");
-        setRequests(response.data.data || []);
+        const status = activeTab === "All" ? undefined : activeTab.toUpperCase();
+        const response = await http.get("/admin/service-requests", {
+          params: {
+            page,
+            limit: pagination.limit,
+            ...(status ? { status } : {}),
+          },
+        });
+        const nextRequests = response.data.data || [];
+        const nextStats = response.data.stats || {};
+        const nextPagination = response.data.pagination || pagination;
+
+        setRequests(nextRequests);
+        setSummaryStats([
+          { label: "Total Requests", value: nextStats.totalRequests ?? 0 },
+          { label: "Pending", value: nextStats.pending ?? 0 },
+          { label: "Approved", value: nextStats.approved ?? 0 },
+          { label: "Rejected", value: nextStats.rejected ?? 0 },
+        ]);
+        setPagination(nextPagination);
       } catch (err) {
         setError(
           err?.response?.data?.message || "Failed to load service requests."
@@ -66,19 +96,7 @@ export default function AdminServiceRequest() {
     };
 
     fetchRequests();
-  }, []);
-
-  const filteredRequests =
-    activeTab === "All"
-      ? requests
-      : requests.filter((r) => r.status?.toLowerCase() === activeTab.toLowerCase());
-
-  const stats = [
-    { label: "Total Requests", value: requests.length },
-    { label: "Pending", value: requests.filter((r) => r.status?.toLowerCase() === "pending").length },
-    { label: "Approved", value: requests.filter((r) => r.status?.toLowerCase() === "approved").length },
-    { label: "Rejected", value: requests.filter((r) => r.status?.toLowerCase() === "rejected").length },
-  ];
+  }, [activeTab, page]);
 
   const toDateString = (value) => {
     if (!value) return "-";
@@ -137,9 +155,16 @@ export default function AdminServiceRequest() {
         subtitle="Review and manage customer service requests"
       />
 
-      <SummaryStats stats={stats} cols="grid-cols-2 lg:grid-cols-4" />
+      <SummaryStats stats={summaryStats} cols="grid-cols-2 lg:grid-cols-4" />
 
-      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <TabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onChange={(nextTab) => {
+          setActiveTab(nextTab);
+          setPage(1);
+        }}
+      />
 
       <div className="mt-4">
         {error && (
@@ -150,14 +175,14 @@ export default function AdminServiceRequest() {
 
         <DataTable
           columns={COLUMNS}
-          isEmpty={!loading && filteredRequests.length === 0}
+          isEmpty={!loading && requests.length === 0}
           emptyMessage={
             loading
               ? "Loading service requests..."
               : error || "No requests match this filter."
           }
         >
-          {filteredRequests.map((req) => {
+          {requests.map((req) => {
             const customerName = req.customer?.name || "Unknown customer";
             const customerEmail = req.customer?.email || "";
             const serviceLabel = req.items?.[0]?.service?.name || "—";
@@ -230,6 +255,32 @@ export default function AdminServiceRequest() {
             );
           })}
         </DataTable>
+
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <div className="text-sm text-slate-600">
+            Page {pagination.page || 1} of {pagination.totalPages || 1}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+              disabled={loading || page <= 1}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPage((currentPage) => Math.min(pagination.totalPages || currentPage, currentPage + 1))}
+              disabled={loading || page >= (pagination.totalPages || 1)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Detail Modal */}
