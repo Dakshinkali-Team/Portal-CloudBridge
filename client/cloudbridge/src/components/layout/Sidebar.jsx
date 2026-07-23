@@ -1,5 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import useAxios from "../../hooks/useAxios";
 
 // Import your icons
 import LogoIcon from "../../assets/Icon.svg";
@@ -10,10 +12,78 @@ import ServiceRequest from "../../assets/dashboardIcons/ServiceRequest.svg";
 import ProfileIcon from "../../assets/dashboardIcons/Profile.svg";
 import LogoutIcon from "../../assets/dashboardIcons/Logout.svg";
 
+const toTitleCase = (value) =>
+  value
+    .toLowerCase()
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const api = useAxios();
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const response = await api.get("/profile", {
+          headers: { "Cache-Control": "no-cache" },
+        });
+
+        if (!mounted) {
+          return;
+        }
+
+        setProfile(response?.data?.data ?? null);
+      } catch {
+        if (!mounted) {
+          return;
+        }
+
+        setProfile(null);
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, [api]);
+
+  const displayName = useMemo(() => {
+    const name = profile?.fullName || profile?.name;
+    if (name && typeof name === "string" && name.trim()) {
+      return toTitleCase(name);
+    }
+
+    const email = profile?.email;
+    if (email && typeof email === "string") {
+      return toTitleCase(email.split("@")[0]);
+    }
+
+    return "Profile";
+  }, [profile]);
+
+  const displayEmail = useMemo(() => {
+    const email = profile?.email;
+    if (email && typeof email === "string" && email.trim()) {
+      return email.trim();
+    }
+
+    return "profile@cloudbridge.com";
+  }, [profile]);
+
+  const displayInitial = useMemo(() => {
+    const firstChar = displayName?.[0] ?? "P";
+    return firstChar.toUpperCase();
+  }, [displayName]);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
@@ -74,6 +144,27 @@ const Sidebar = () => {
           })}
         </div>
       
+        <div className="border-t border-[#E5E8ED] px-4 py-4">
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100 text-left transition"
+          >
+            <div className="w-9 h-9 rounded-full bg-[#0B78C1] text-white font-semibold text-[13px] leading-none flex items-center justify-center shrink-0">
+              {displayInitial}
+            </div>
+
+            <div className="min-w-0 flex flex-col">
+              <span className="font-WorkSans text-[15px] leading-5 font-semibold text-[#0F172B] truncate">
+                {displayName}
+              </span>
+              <span className="font-WorkSans text-[12px] leading-4 text-[#64748B] truncate">
+                {displayEmail}
+              </span>
+            </div>
+          </button>
+        </div>
+
         {/* LOGOUT */}
         <div className="border-t border-[#E5E8ED] px-4 py-4">
           <button
@@ -90,7 +181,7 @@ const Sidebar = () => {
         </div>
       
       </div>
-        );
-      };
+  );
+};
 
 export default Sidebar;

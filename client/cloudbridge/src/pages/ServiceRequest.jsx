@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Menu } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import Card from "../components/cloud/requestservices/RequestCard";
 import ServiceItem from "../components/cloud/requestservices/RequestServiceItem";
@@ -105,6 +106,7 @@ const normalizeAvailableServices = (services = []) => {
 
 const ServiceRequest = () => {
   const { toast } = useToast();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selected, setSelected] = useState([]);
   const [servicesByCategory, setServicesByCategory] = useState(
     createEmptyServiceGroups()
@@ -228,9 +230,21 @@ const ServiceRequest = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+      <Sidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex-1 p-8 overflow-y-auto">
+        <header className="lg:hidden flex items-center gap-3 h-14 px-4 -mx-8 -mt-8 mb-6 bg-white border-b border-slate-200">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation"
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+          >
+            <Menu size={20} aria-hidden="true" />
+          </button>
+          <span className="text-[15px] font-semibold text-[#0F172B]">CloudBridge</span>
+        </header>
+
         <div className="w-full max-w-9xl">
           <header className="mb-4">
             <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight">

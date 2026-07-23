@@ -1,4 +1,5 @@
 import Sidebar from "../components/layout/Sidebar";
+
 import DashboardPage from "./customer_dashboard/DashboardPage";
 
 export default function Dashboard() {
