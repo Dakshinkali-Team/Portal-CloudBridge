@@ -5,6 +5,7 @@
 
 // Email regex pattern - standard RFC 5322 simplified regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_LOCAL_PART_REGEX = /^[A-Za-z0-9]+$/;
 
 // Constants
 export const MIN_PASSWORD_LENGTH = 8;
@@ -35,6 +36,21 @@ export const validateEmail = (email) => {
     return {
       isValid: false,
       error: "Please enter a valid email address.",
+    };
+  }
+
+  const [localPart] = trimmedEmail.split("@");
+  const alphabeticCount = (localPart.match(/[A-Za-z]/g) || []).length;
+
+  if (
+    localPart.length < 6 ||
+    !EMAIL_LOCAL_PART_REGEX.test(localPart) ||
+    alphabeticCount < 5 ||
+    /^\d+$/.test(localPart)
+  ) {
+    return {
+      isValid: false,
+      error: "Email username must contain at least 6 characters and at least 5 letters. Numbers are allowed but cannot be used alone.",
     };
   }
 
