@@ -4,6 +4,7 @@ import {
   createCustomerRequest,
   getCustomerAvailableServices,
   getMyServiceRequests,
+  getCustomerDashboardSummary,
 } from "../controllers/customerServiceController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
@@ -34,6 +35,11 @@ router.get(
   "/my-services",
   validateRequest({ query: myServiceRequestsQuerySchema }),
   getMyServiceRequests
+);
+
+router.get(
+  "/dashboard-summary",
+  getCustomerDashboardSummary
 );
 
 export default router;

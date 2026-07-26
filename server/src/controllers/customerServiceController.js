@@ -2,6 +2,7 @@ import { getAvailableActiveServices } from "../services/customerCatalogService.j
 import {
   createCustomerServiceRequest,
   getCustomerServiceRequests,
+  getCustomerDashboardSummaryData,
 } from "../services/serviceRequestService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -46,5 +47,14 @@ export const getMyServiceRequests = asyncHandler(async (req, res) => {
     success: true,
     data: result.data,
     pagination: result.pagination,
+  });
+});
+
+export const getCustomerDashboardSummary = asyncHandler(async (req, res) => {
+  const result = await getCustomerDashboardSummaryData(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data: result,
   });
 });

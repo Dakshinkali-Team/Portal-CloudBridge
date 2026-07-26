@@ -334,6 +334,7 @@ export const getServices = async (req, res) => {
         where,
         orderBy: { createdAt: "desc" },
         include: SERVICE_INCLUDE,
+        relationLoadStrategy: "join",
       });
 
       const total = await prisma.service.count({ where });
@@ -362,6 +363,7 @@ export const getServices = async (req, res) => {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: SERVICE_INCLUDE,
+        relationLoadStrategy: "join",
       }),
       prisma.service.count({ where }),
     ]);
@@ -391,6 +393,7 @@ export const getServiceById = async (req, res) => {
     const service = await prisma.service.findUnique({
       where: { id },
       include: SERVICE_INCLUDE,
+      relationLoadStrategy: "join",
     });
 
     if (!service) {
@@ -549,6 +552,7 @@ export const updateService = async (req, res) => {
         return tx.service.findUnique({
           where: { id },
           include: SERVICE_INCLUDE,
+          relationLoadStrategy: "join",
         });
       },
       { timeout: 10000 }
