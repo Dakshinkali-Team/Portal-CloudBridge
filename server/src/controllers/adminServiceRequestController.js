@@ -1,17 +1,30 @@
 import {
   getAdminServiceRequests,
+  getAdminServiceRequestStats,
   respondToServiceRequest,
 } from "../services/serviceRequestService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getAllServiceRequests = asyncHandler(async (req, res) => {
   const query = req.validated?.query ?? req.query;
-  const result = await getAdminServiceRequests(query);
+  const [result, stats] = await Promise.all([
+    getAdminServiceRequests(query),
+    getAdminServiceRequestStats(),
+  ]);
+  const selectedStatus = query.status?.toUpperCase();
+  const total = selectedStatus
+    ? stats.byStatus?.[selectedStatus] ?? 0
+    : stats.totalRequests;
 
   res.status(200).json({
     success: true,
     data: result.data,
-    pagination: result.pagination,
+    pagination: {
+      ...result.pagination,
+      total,
+      totalPages: total === 0 ? 0 : Math.ceil(total / query.limit),
+    },
+    stats,
   });
 });
 

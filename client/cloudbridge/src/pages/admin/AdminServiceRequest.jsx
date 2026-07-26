@@ -59,6 +59,7 @@ export default function AdminServiceRequest() {
   const [actionLoading, setActionLoading] = useState({});
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -86,6 +87,25 @@ export default function AdminServiceRequest() {
           { label: "Rejected", value: nextStats.rejected ?? 0 },
         ]);
         setPagination(nextPagination);
+
+        // Warm the server cache for the status tabs after the initial list is
+        // visible, so switching between Pending, Approved, and Rejected does
+        // not wait on the hosted database.
+        if (activeTab === "All" && page === 1) {
+          const warmStatusTabs = async () => {
+            for (const tabStatus of ["PENDING", "APPROVED", "REJECTED"]) {
+              try {
+                await http.get("/admin/service-requests", {
+                  params: { page: 1, limit: pagination.limit, status: tabStatus },
+                });
+              } catch {
+                // The visible request has already succeeded; warming is best effort.
+              }
+            }
+          };
+
+          void warmStatusTabs();
+        }
       } catch (err) {
         setError(
           err?.response?.data?.message || "Failed to load service requests."
@@ -96,7 +116,7 @@ export default function AdminServiceRequest() {
     };
 
     fetchRequests();
-  }, [activeTab, page]);
+  }, [activeTab, page, refreshKey]);
 
   const toDateString = (value) => {
     if (!value) return "-";
@@ -128,6 +148,10 @@ export default function AdminServiceRequest() {
       if (selectedRequest?.id === requestId) {
         setSelectedRequest(updatedRequest);
       }
+
+      // Reload the server-backed table and summary so the active filter and
+      // statistics immediately reflect the status change.
+      setRefreshKey((current) => current + 1);
     } catch (err) {
       setError(
         err?.response?.data?.message ||
