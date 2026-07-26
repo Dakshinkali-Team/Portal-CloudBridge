@@ -1,30 +1,29 @@
 import prisma from "../config/prisma.js";
-import { buildPaginationMeta } from "../utils/pagination.js";
 
-const ACTIVE_SERVICE_INCLUDE = {
-  variants: {
-    orderBy: { id: "asc" },
-    include: {
-      attributes: {
-        orderBy: { id: "asc" },
-      },
-    },
-  },
-};
+const CATALOG_CACHE_TTL_MS = 30_000;
+const activeServiceCache = new Map();
 
-const SERVICE_CATALOG_SELECT = {
+const ACTIVE_SERVICE_SELECT = {
   id: true,
   name: true,
   category: true,
-  description: true,
-  basePrice: true,
-  hasSliders: true,
-  vcpuPrice: true,
-  ramPrice: true,
-  storagePrice: true,
-  isFixedVariant: true,
-  variantSizeGb: true,
-  isActive: true,
+  variants: {
+    orderBy: { id: "asc" },
+    select: {
+      id: true,
+      basePrice: true,
+      attributes: {
+        orderBy: { id: "asc" },
+        select: {
+          id: true,
+          key: true,
+          unit: true,
+          valueNumber: true,
+          valueText: true,
+        },
+      },
+    },
+  },
 };
 
 const buildActiveServiceWhereClause = ({ search, category }) => {
@@ -56,45 +55,13 @@ const buildActiveServiceWhereClause = ({ search, category }) => {
   return where;
 };
 
-const buildServiceCatalogMap = async (services) => {
-  if (services.length === 0) {
-    return new Map();
-  }
-
-  // A schema relation is not available yet, so we match catalogs by name + category
-  // only when both values line up exactly.
-  const catalogFilters = services.map((service) => ({
-    name: service.name,
-    category: service.category,
-    isActive: true,
-  }));
-
-  const catalogs = await prisma.serviceCatalog.findMany({
-    where: {
-      OR: catalogFilters,
-    },
-    select: SERVICE_CATALOG_SELECT,
-  });
-
-  return catalogs.reduce((catalogMap, catalog) => {
-    const key = `${catalog.name}::${catalog.category}`;
-
-    if (!catalogMap.has(key)) {
-      catalogMap.set(key, catalog);
-    }
-
-    return catalogMap;
-  }, new Map());
-};
-
-const serializeActiveService = (service, catalog) => {
+const serializeActiveService = (service) => {
   const prices = service.variants.map((variant) => variant.basePrice);
 
   return {
     ...service,
     variantCount: service.variants.length,
     startingPrice: prices.length > 0 ? Math.min(...prices) : null,
-    catalog: catalog ?? null,
   };
 };
 
@@ -104,29 +71,43 @@ export const getAvailableActiveServices = async ({
   search,
   category,
 }) => {
+  const cacheKey = JSON.stringify({ page, limit, search, category });
+  const cachedResult = activeServiceCache.get(cacheKey);
+
+  if (cachedResult?.expiresAt > Date.now()) {
+    return cachedResult.data;
+  }
+
   const where = buildActiveServiceWhereClause({ search, category });
   const skip = (page - 1) * limit;
 
-  const [services, total] = await prisma.$transaction([
-    prisma.service.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: ACTIVE_SERVICE_INCLUDE,
-    }),
-    prisma.service.count({ where }),
-  ]);
+  // The request form has no pagination controls, so avoid COUNT(*) and use an
+  // extra row to retain next-page information in a single database round trip.
+  const services = await prisma.service.findMany({
+    where,
+    skip,
+    take: limit + 1,
+    orderBy: { createdAt: "desc" },
+    select: ACTIVE_SERVICE_SELECT,
+    relationLoadStrategy: "join",
+  });
 
-  const serviceCatalogMap = await buildServiceCatalogMap(services);
+  const hasNextPage = services.length > limit;
+  const pageData = hasNextPage ? services.slice(0, limit) : services;
 
-  return {
-    data: services.map((service) =>
-      serializeActiveService(
-        service,
-        serviceCatalogMap.get(`${service.name}::${service.category}`)
-      )
-    ),
-    pagination: buildPaginationMeta(page, limit, total),
+  const result = {
+    data: pageData.map(serializeActiveService),
+    pagination: {
+      page,
+      limit,
+      hasNextPage,
+    },
   };
+
+  activeServiceCache.set(cacheKey, {
+    data: result,
+    expiresAt: Date.now() + CATALOG_CACHE_TTL_MS,
+  });
+
+  return result;
 };

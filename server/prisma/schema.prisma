@@ -3,7 +3,8 @@
 // =============================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -120,6 +121,8 @@ model ServiceRequest {
   items RequestItem[]
 
   @@index([customerId, createdAt])
+  @@index([customerId, status, createdAt])
+  @@index([customerId, updatedAt])
   @@index([status, createdAt])
   @@index([reviewerId])
 }

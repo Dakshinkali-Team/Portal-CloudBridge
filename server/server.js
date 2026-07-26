@@ -9,6 +9,7 @@ import pricingRoutes from "./src/routes/pricingRoutes.js";
 import adminServiceCatalogRoutes from "./src/routes/adminServiceCatalogRoutes.js";
 import customerRoutes from "./src/routes/customerRoutes.js";
 import adminServiceRequestRoutes from "./src/routes/adminServiceRequestRoutes.js";
+import adminDashboardRoutes from "./src/routes/adminDashboardRoutes.js";
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
 import { adminMiddleware } from "./src/middleware/adminMiddleware.js";
 import {
@@ -17,6 +18,7 @@ import {
 } from "./src/middleware/errorHandler.js";
 import { ROLES } from "./src/constants/roles.js";
 import { customerMiddleware } from "./src/middleware/customerMiddleware.js";
+import prisma from "./src/config/prisma.js";
 
 dotenv.config();
 
@@ -52,6 +54,12 @@ app.use(
   adminMiddleware,
   adminServiceRequestRoutes
 );
+app.use(
+  "/api/admin/dashboard",
+  authMiddleware,
+  adminMiddleware,
+  adminDashboardRoutes
+);
 
 // HEALTH DIAGNOSTIC ROOT INTERCEPTOR
 app.get("/", (req, res) => res.send("Server Running"));
@@ -69,17 +77,22 @@ app.get("/api/customer/dashboard", authMiddleware, (req, res) => {
   res.json({ message: "Welcome Customer Dashboard", user: req.user });
 });
 
-// ADMIN DASHBOARD SECURITY GATEWAY
-app.get("/api/admin/dashboard", authMiddleware, (req, res) => {
-  if (req.user.role !== ROLES.ADMIN && req.user.role !== ROLES.SUPER_ADMIN) {
-    return res.status(403).json({ message: "Admin access only" });
-  }
 
-  res.json({ message: "Welcome Admin Dashboard", user: req.user });
-});
 
 app.use(notFoundHandler);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const startServer = async () => {
+  // Establish the hosted PostgreSQL connection during startup rather than on
+  // the first customer request, which avoids a visible Neon cold connection
+  // delay on the Service Request page.
+  await prisma.$connect();
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+};
+
+startServer().catch((error) => {
+  console.error("Unable to connect to the database:", error);
+  process.exit(1);
+});

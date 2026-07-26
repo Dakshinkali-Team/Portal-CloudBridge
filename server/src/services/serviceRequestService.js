@@ -6,7 +6,81 @@ import {
 import { createAppError } from "../utils/appError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
 
-const SERVICE_REQUEST_INCLUDE = {
+const DASHBOARD_CACHE_TTL_MS = 15_000;
+const customerDashboardCache = new Map();
+
+const invalidateCustomerDashboard = (customerId) => {
+  customerDashboardCache.delete(customerId);
+};
+
+// Used for Dashboard & Service Request List
+const SERVICE_REQUEST_SUMMARY_INCLUDE = {
+  customer: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+  reviewer: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  items: {
+    select: {
+      id: true,
+      quantity: true,
+      unitPriceSnap: true,
+      service: {
+        select: {
+          id: true,
+          name: true,
+          category: true,
+        },
+      },
+      serviceVariant: {
+        select: {
+          id: true,
+          basePrice: true,
+        },
+      },
+    },
+  },
+};
+
+// Customer pages only need request and item information. Keeping the customer
+// and reviewer joins out of this common path avoids loading the same user data
+// for every row in a customer's own service list.
+const CUSTOMER_SERVICE_REQUEST_INCLUDE = {
+  items: {
+    orderBy: {
+      id: "asc",
+    },
+    select: {
+      id: true,
+      quantity: true,
+      unitPriceSnap: true,
+      service: {
+        select: {
+          id: true,
+          name: true,
+          category: true,
+        },
+      },
+      serviceVariant: {
+        select: {
+          id: true,
+          basePrice: true,
+        },
+      },
+    },
+  },
+};
+
+// Used only when opening full request details
+const SERVICE_REQUEST_DETAIL_INCLUDE = {
   customer: {
     select: {
       id: true,
@@ -25,7 +99,9 @@ const SERVICE_REQUEST_INCLUDE = {
     },
   },
   items: {
-    orderBy: { id: "asc" },
+    orderBy: {
+      id: "asc",
+    },
     include: {
       service: {
         select: {
@@ -42,11 +118,10 @@ const SERVICE_REQUEST_INCLUDE = {
           basePrice: true,
           currency: true,
           billingInterval: true,
-          // Variant attributes are optional metadata for display only.
-          // An empty VariantAttribute table will return an empty array here,
-          // not a failure.
           attributes: {
-            orderBy: { id: "asc" },
+            orderBy: {
+              id: "asc",
+            },
             select: {
               id: true,
               key: true,
@@ -249,10 +324,13 @@ export const createCustomerServiceRequest = async ({
   }),
 },
       },
-      include: SERVICE_REQUEST_INCLUDE,
+      include: CUSTOMER_SERVICE_REQUEST_INCLUDE,
     });
-  });
+  },
+{timeout: 10000}
+);
 
+  invalidateCustomerDashboard(customerId);
   return serializeServiceRequest(serviceRequest);
 };
 
@@ -269,20 +347,28 @@ export const getCustomerServiceRequests = async ({
     where.status = status?.toUpperCase();
   }
 
-  const [serviceRequests, total] = await prisma.$transaction([
-    prisma.serviceRequest.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: SERVICE_REQUEST_INCLUDE,
-    }),
-    prisma.serviceRequest.count({ where }),
-  ]);
+  // The current customer UI does not display a total or page controls. Fetch
+  // one extra record to preserve next-page information without a second,
+  // latency-heavy COUNT query to the hosted database.
+  const serviceRequests = await prisma.serviceRequest.findMany({
+    where,
+    skip,
+    take: limit + 1,
+    orderBy: { createdAt: "desc" },
+    include: CUSTOMER_SERVICE_REQUEST_INCLUDE,
+    relationLoadStrategy: "join",
+  });
+
+  const hasNextPage = serviceRequests.length > limit;
+  const pageData = hasNextPage ? serviceRequests.slice(0, limit) : serviceRequests;
 
   return {
-    data: serviceRequests.map(serializeServiceRequest),
-    pagination: buildPaginationMeta(page, limit, total),
+    data: pageData.map(serializeServiceRequest),
+    pagination: {
+      page,
+      limit,
+      hasNextPage,
+    },
   };
 };
 
@@ -301,7 +387,8 @@ export const getAdminServiceRequests = async ({
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
-      include: SERVICE_REQUEST_INCLUDE,
+      include: SERVICE_REQUEST_SUMMARY_INCLUDE,
+      relationLoadStrategy: "join",
     }),
     prisma.serviceRequest.count({ where }),
   ]);
@@ -324,6 +411,7 @@ export const respondToServiceRequest = async ({
     select: {
       id: true,
       status: true,
+      customerId: true,
     },
   });
 
@@ -348,8 +436,97 @@ export const respondToServiceRequest = async ({
         : {}),
       ...(estimatedDate !== undefined ? { estimatedDate } : {}),
     },
-    include: SERVICE_REQUEST_INCLUDE,
+    include: SERVICE_REQUEST_SUMMARY_INCLUDE,
   });
 
+  invalidateCustomerDashboard(existingRequest.customerId);
   return serializeServiceRequest(updatedRequest);
+};
+
+export const getCustomerDashboardSummaryData = async (customerId) => {
+  const cachedDashboard = customerDashboardCache.get(customerId);
+  if (cachedDashboard?.expiresAt > Date.now()) {
+    return cachedDashboard.data;
+  }
+
+  // Neon adds noticeable latency per database round trip. This CTE returns
+  // the three counters and five activity records in one indexed query.
+  const [dashboardRow] = await prisma.$queryRaw`
+    SELECT
+      COUNT(*) FILTER (WHERE "status" = 'APPROVED')::int AS "activeServices",
+      COUNT(*) FILTER (WHERE "status" = 'PENDING')::int AS "pendingRequests",
+      COUNT(*) FILTER (WHERE "status" = 'COMPLETED')::int AS "completed",
+      COALESCE(
+        (
+          SELECT json_agg(
+            json_build_object(
+              'id', recent."id",
+              'status', recent."status",
+              'createdAt', recent."createdAt",
+              'updatedAt', recent."updatedAt",
+              'totalItems', recent."totalItems",
+              'items', recent.items
+            )
+            ORDER BY recent."updatedAt" DESC
+          )
+          FROM (
+            SELECT
+              request."id",
+              request."status",
+              request."createdAt",
+              request."updatedAt",
+              COALESCE(items."totalItems", 0) AS "totalItems",
+              COALESCE(items.items, '[]'::json) AS items
+            FROM "ServiceRequest" AS request
+            LEFT JOIN LATERAL (
+              SELECT
+                (
+                  SELECT COALESCE(SUM("quantity"), 0)::int
+                  FROM "RequestItem"
+                  WHERE "requestId" = request."id"
+                ) AS "totalItems",
+                json_agg(
+                  json_build_object(
+                    'id', item."id",
+                    'quantity', item."quantity",
+                    'unitPriceSnap', item."unitPriceSnap",
+                    'service', json_build_object('name', service."name")
+                  )
+                  ORDER BY item."id" ASC
+                ) AS items
+              FROM (
+                SELECT *
+                FROM "RequestItem"
+                WHERE "requestId" = request."id"
+                ORDER BY "id" ASC
+                LIMIT 1
+              ) AS item
+              INNER JOIN "Service" AS service ON service."id" = item."serviceId"
+            ) AS items ON true
+            WHERE request."customerId" = ${customerId}
+            ORDER BY request."updatedAt" DESC
+            LIMIT 5
+          ) AS recent
+        ),
+        '[]'::json
+      ) AS "recentActivity"
+    FROM "ServiceRequest"
+    WHERE "customerId" = ${customerId}
+  `;
+
+  const dashboardData = {
+    counts: {
+      activeServices: dashboardRow?.activeServices ?? 0,
+      pendingRequests: dashboardRow?.pendingRequests ?? 0,
+      completed: dashboardRow?.completed ?? 0,
+    },
+    recentActivity: dashboardRow?.recentActivity ?? [],
+  };
+
+  customerDashboardCache.set(customerId, {
+    data: dashboardData,
+    expiresAt: Date.now() + DASHBOARD_CACHE_TTL_MS,
+  });
+
+  return dashboardData;
 };
