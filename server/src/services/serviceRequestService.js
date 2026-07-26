@@ -4,13 +4,20 @@ import {
   SERVICE_REQUEST_TRANSITIONS,
 } from "../constants/serviceRequestStatus.js";
 import { createAppError } from "../utils/appError.js";
-import { buildPaginationMeta } from "../utils/pagination.js";
 
 const DASHBOARD_CACHE_TTL_MS = 15_000;
 const customerDashboardCache = new Map();
+const ADMIN_REQUEST_CACHE_TTL_MS = 15_000;
+const adminServiceRequestCache = new Map();
+let adminServiceRequestStatsCache = null;
 
 const invalidateCustomerDashboard = (customerId) => {
   customerDashboardCache.delete(customerId);
+};
+
+export const invalidateAdminServiceRequestCache = () => {
+  adminServiceRequestCache.clear();
+  adminServiceRequestStatsCache = null;
 };
 
 // Used for Dashboard & Service Request List
@@ -331,6 +338,7 @@ export const createCustomerServiceRequest = async ({
 );
 
   invalidateCustomerDashboard(customerId);
+  invalidateAdminServiceRequestCache();
   return serializeServiceRequest(serviceRequest);
 };
 
@@ -380,23 +388,70 @@ export const getAdminServiceRequests = async ({
 }) => {
   const skip = (page - 1) * limit;
   const where = buildAdminServiceRequestWhereClause({ status, search });
+  const cacheKey = JSON.stringify({ page, limit, status: status ?? null, search: search ?? null });
+  const cachedResult = adminServiceRequestCache.get(cacheKey);
 
-  const [serviceRequests, total] = await prisma.$transaction([
-    prisma.serviceRequest.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: SERVICE_REQUEST_SUMMARY_INCLUDE,
-      relationLoadStrategy: "join",
-    }),
-    prisma.serviceRequest.count({ where }),
-  ]);
+  if (cachedResult?.expiresAt > Date.now()) {
+    return cachedResult.data;
+  }
 
-  return {
-    data: serviceRequests.map(serializeServiceRequest),
-    pagination: buildPaginationMeta(page, limit, total),
+  const serviceRequests = await prisma.serviceRequest.findMany({
+    where,
+    skip,
+    take: limit + 1,
+    orderBy: { createdAt: "desc" },
+    include: SERVICE_REQUEST_SUMMARY_INCLUDE,
+    relationLoadStrategy: "join",
+  });
+
+  const hasNextPage = serviceRequests.length > limit;
+  const pageData = hasNextPage ? serviceRequests.slice(0, limit) : serviceRequests;
+
+  const result = {
+    data: pageData.map(serializeServiceRequest),
+    pagination: {
+      page,
+      limit,
+      hasNextPage,
+    },
   };
+
+  adminServiceRequestCache.set(cacheKey, {
+    data: result,
+    expiresAt: Date.now() + ADMIN_REQUEST_CACHE_TTL_MS,
+  });
+
+  return result;
+};
+
+export const getAdminServiceRequestStats = async () => {
+  if (adminServiceRequestStatsCache?.expiresAt > Date.now()) {
+    return adminServiceRequestStatsCache.data;
+  }
+
+  const statusCounts = await prisma.serviceRequest.groupBy({
+    by: ["status"],
+    _count: { _all: true },
+  });
+
+  const countsByStatus = new Map(
+    statusCounts.map(({ status, _count }) => [status, _count._all])
+  );
+
+  const stats = {
+    totalRequests: statusCounts.reduce((total, entry) => total + entry._count._all, 0),
+    pending: countsByStatus.get("PENDING") ?? 0,
+    approved: countsByStatus.get("APPROVED") ?? 0,
+    rejected: countsByStatus.get("REJECTED") ?? 0,
+    byStatus: Object.fromEntries(countsByStatus),
+  };
+
+  adminServiceRequestStatsCache = {
+    data: stats,
+    expiresAt: Date.now() + ADMIN_REQUEST_CACHE_TTL_MS,
+  };
+
+  return stats;
 };
 
 export const respondToServiceRequest = async ({
@@ -440,6 +495,7 @@ export const respondToServiceRequest = async ({
   });
 
   invalidateCustomerDashboard(existingRequest.customerId);
+  invalidateAdminServiceRequestCache();
   return serializeServiceRequest(updatedRequest);
 };
 
